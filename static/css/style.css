@@ -24,3 +24,16 @@
 .active{
     color:#FFD700 !important;
 }
+.card{
+    border:none;
+    border-radius:15px;
+    transition:0.4s;
+}
+
+.card:hover{
+
+    transform:translateY(-10px);
+    transition: 0.4s;
+    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2);
+
+}
