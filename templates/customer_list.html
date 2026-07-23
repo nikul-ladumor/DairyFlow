@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <h2 class="text-success mb-4">
+        <i class="bi bi-people-fill me-2"></i>
+        Customer List
+    </h2>
+
+    <table class="table table-bordered table-striped">
+
+        <thead class="table-success">
+
+            <tr>
+
+                <th>ID</th>
+
+                <th>Customer ID</th>
+
+                <th>Name</th>
+
+                <th>Mobile</th>
+
+                <th>Address</th>
+
+                <th>Action</th>
+
+            </tr>
+    
+        </thead>
+
+        <tbody>
+
+        {% for customer in customers %}
+
+        <tr>
+
+            <td>{{ customer.id }}</td>
+
+            <td>{{ customer.customer_id }}</td>
+
+            <td>{{ customer.customer_name }}</td>
+
+            <td>{{ customer.mobile_no }}</td>
+
+            <td>{{ customer.address }}</td>
+
+            <td>
+                <!-- update button-->
+                <a href="{% url 'edit_customer' customer.id %}" class="btn btn-warning btn-sm me-2">
+                    <i class="bi bi-pencil-square"></i>
+                </a>
+                
+                <!-- Delete button-->
+                <a href="{% url 'delete_customer' customer.id %}" class="btn btn-danger btn-sm">
+                    <i class="bi bi-trash"></i>
+                </a>
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+        
+    </table>
+
+</div
+{% endblock %}
