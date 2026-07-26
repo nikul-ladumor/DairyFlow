@@ -8,3 +8,34 @@ class Customer(models.Model):
 
     def __str__(self):
         return self.customer_name
+
+
+SHIFT_CHOICES = [
+        ("Morning", "Morning"),
+        ("Evening", "Evening"),
+    ]
+
+MILK_TYPEE_CHOICES = [
+    ("Cow", "Cow"),
+    ("Buffalo", "Buffalo"),
+]
+
+class MilkEntry(models.Model):
+    customer = models.ForeignKey(Customer,on_delete=models.CASCADE)
+    date = models.DateField()
+    shift = models.CharField(
+        max_length=10,
+        choices=SHIFT_CHOICES
+    )
+    milk_quantity = models.DecimalField(
+        max_digits=5,
+        decimal_places=2
+    )
+    milk_type = models.CharField(
+        max_length=10,
+        choices=MILK_TYPEE_CHOICES
+    )
+    rate = models.DecimalField(
+        max_digits=5,
+        decimal_places=2
+    )

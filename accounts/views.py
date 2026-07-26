@@ -86,3 +86,8 @@ def delete_customer(request, id):
     messages.success(request, "Customer Deleted Successfully!")
 
     return redirect("customer_list")
+
+
+def add_milk_entry(request):
+    
+    return render(request, "add_milk_entry.html")
