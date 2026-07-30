@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <h3 class="text-success">
+        <i class="bi bi-list-ul me-2"></i>
+        Milk Entry List
+    </h3>
+
+    <hr>
+    <table class="table table-bordered table-hover shadow">
+
+    <thead class="table-success">
+
+        <tr>
+
+            <th>Customer</th>
+            <th>Date</th>
+            <th>Shift</th>
+            <th>Milk Quantity</th>
+            <th>Milk Type</th>
+            <th>Rate</th>
+            <th class="text-center">Action</th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        {% for milk_entry in milk_entries %}
+
+<tr>
+
+    <td>{{ milk_entry.customer.customer_name }}</td>
+
+    <td>{{ milk_entry.date }}</td>
+
+    <td>{{ milk_entry.shift }}</td>
+
+    <td>{{ milk_entry.milk_quantity }}</td>
+
+    <td>{{ milk_entry.milk_type }}</td>
+
+    <td>{{ milk_entry.rate }}</td>
+
+    <td class="text-center">
+
+    <a href="{% url 'edit_milk_entry' milk_entry.id %}"
+    class="btn btn-warning btn-sm">
+
+        <i class="bi bi-pencil-square"></i>
+
+    </a>
+
+        <a href="{% url 'delete_milk_entry' milk_entry.id %}"
+        class="btn btn-danger btn-sm">
+
+            <i class="bi bi-trash"></i>
+
+        </a>
+
+    </td>
+
+</tr>
+
+        {% endfor %}
+
+    </tbody>
+
+</table>
+
+</div>
+{% endblock %}

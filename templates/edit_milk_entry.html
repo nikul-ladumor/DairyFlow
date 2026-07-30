@@ -13,10 +13,9 @@
                 <div class="card-body p-4">
 
                     <h3 class="text-success mb-4">
-                        <i class="bi bi-droplet-fill me-2"></i>
-                        Add Milk Entry
+                        <i class="bi bi-pencil-square me-2"></i>
+                        Edit Milk Entry
                     </h3>
-
                     <hr>
 
                     <form method="post">
@@ -29,17 +28,23 @@
                                 Customer
                             </label>
 
-                            <select class="form-select" name="customer" required>
+                            <select class="form-select" name="customer">
+
                                 <option value="">Select Customer</option>
-                                    {% for customer in customers %}
 
-                                        <option value="{{ customer.id }}">
+                                {% for customer in customers %}
 
-                                            {{ customer.customer_name }}
+                                <option value="{{ customer.id }}"
+                                    {% if customer.id == milk_entry.customer.id %}selected{% endif %}>
 
-                                        </option>
-                                    {% endfor %}
-                                </select>
+                                    {{ customer.customer_name }}
+
+                                </option>
+
+                                {% endfor %}
+
+                            </select>
+
                         </div>
 
                         <!-- Date -->
@@ -49,13 +54,14 @@
                             </label>
 
                             <input type="date"
-                                    class="form-control"
-                                    name="date"
-                                    required>
+                                   class="form-control"
+                                   name="date"
+                                   value="{{ milk_entry.date|date:'Y-m-d' }}">
                         </div>
 
                         <!-- Shift -->
                         <div class="mb-3">
+
                             <label class="form-label fw-bold d-block">
                                 Shift
                             </label>
@@ -63,10 +69,10 @@
                             <div class="form-check form-check-inline">
 
                                 <input class="form-check-input"
-                                        type="radio"
-                                        name="shift"
-                                        value="Morning"
-                                        required>
+                                       type="radio"
+                                       name="shift"
+                                       value="Morning"
+                                       {% if milk_entry.shift == "Morning" %}checked{% endif %}>
 
                                 <label class="form-check-label">
                                     Morning
@@ -77,9 +83,10 @@
                             <div class="form-check form-check-inline">
 
                                 <input class="form-check-input"
-                                        type="radio"
-                                        name="shift"
-                                        value="Evening">
+                                       type="radio"
+                                       name="shift"
+                                       value="Evening"
+                                       {% if milk_entry.shift == "Evening" %}checked{% endif %}>
 
                                 <label class="form-check-label">
                                     Evening
@@ -97,10 +104,9 @@
                             </label>
 
                             <input type="number"
-                                    step="0.01"
-                                    class="form-control"
-                                    name="milk_quantity"
-                                    required>
+                                   class="form-control"
+                                   name="milk_quantity"
+                                   value="{{ milk_entry.milk_quantity }}">
 
                         </div>
 
@@ -114,9 +120,10 @@
                             <div class="form-check form-check-inline">
 
                                 <input class="form-check-input"
-                                        type="radio"
-                                        name="milk_type"
-                                        value="Cow">
+                                       type="radio"
+                                       name="milk_type"
+                                       value="Cow"
+                                       {% if milk_entry.milk_type == "Cow" %}checked{% endif %}>
 
                                 <label class="form-check-label">
                                     Cow
@@ -127,10 +134,10 @@
                             <div class="form-check form-check-inline">
 
                                 <input class="form-check-input"
-                                        type="radio"
-                                        name="milk_type"
-                                        value="Buffalo"
-                                        required>
+                                       type="radio"
+                                       name="milk_type"
+                                       value="Buffalo"
+                                       {% if milk_entry.milk_type == "Buffalo" %}checked{% endif %}>
 
                                 <label class="form-check-label">
                                     Buffalo
@@ -148,10 +155,10 @@
                             </label>
 
                             <input type="number"
-                                    step="0.01"
-                                    class="form-control"
-                                    name="rate"
-                                    required>
+                                   step="0.01"
+                                   class="form-control"
+                                   name="rate"
+                                   value="{{ milk_entry.rate }}">
 
                         </div>
 
@@ -161,9 +168,9 @@
                             <button type="submit"
                                     class="btn btn-success px-5">
 
-                                <i class="bi bi-floppy me-2"></i>
+                                <i class="bi bi-pencil-square me-2"></i>
 
-                                Save Milk Entry
+                                Update Milk Entry
 
                             </button>
 
