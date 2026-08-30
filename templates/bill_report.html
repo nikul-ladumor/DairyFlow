@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-5 mb-5">
+
+    <div class="card shadow">
+
+        <!-- Header -->
+
+        <div class="card-header bg-success text-white">
+
+            <h3 class="mb-0">
+
+                <i class="bi bi-receipt"></i>
+
+                Monthly Bill Report
+
+            </h3>
+
+        </div>
+
+
+        <div class="card-body">
+
+            <!-- Customer + Bill Details -->
+
+            <div class="row mb-4">
+
+                <!-- Customer Details -->
+
+                <div class="col-md-6">
+
+                    <h5>Customer Details</h5>
+
+                    <p>
+                        <strong>Name :</strong>
+                        {{ customer.customer_name }}
+                    </p>
+
+                    <p>
+                        <strong>Mobile :</strong>
+                        {{ customer.mobile_no }}
+                    </p>
+
+                    <p>
+                        <strong>Address :</strong>
+                        {{ customer.address }}
+                    </p>
+
+                </div>
+
+
+                <!-- Bill Details -->
+
+                <div class="col-md-6 text-end">
+
+                    <h5>Bill Details</h5>
+
+                    <p>
+                        <strong>Bill No. :</strong>
+                        {{ bill_number }}
+                    </p>
+
+                    <p>
+                        <strong>Bill Date :</strong>
+                        {{ bill_date|date:"d M Y" }}
+                    </p>
+
+                    <p>
+                        <strong>Bill Period :</strong>
+                        {{ from_date }} To {{ to_date }}
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <hr>
+
+
+            <!-- Milk Entry Table -->
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered table-hover">
+
+                    <thead class="table-success">
+
+                        <tr>
+
+                            <th>Date</th>
+
+                            <th>Shift</th>
+
+                            <th>Milk Type</th>
+
+                            <th>Quantity</th>
+
+                            <th>Rate</th>
+
+                            <th>Amount</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for entry in milk_entries %}
+
+                        <tr>
+
+                            <td>
+                                {{ entry.date|date:"d M Y" }}
+                            </td>
+
+                            <td>
+                                {{ entry.shift }}
+                            </td>
+
+                            <td>
+                                {{ entry.milk_type }}
+                            </td>
+
+                            <td>
+                                {{ entry.milk_quantity|floatformat:2 }}
+                            </td>
+
+                            <td>
+                                {{ entry.rate|floatformat:2 }}
+                            </td>
+
+                            <td>
+                                ₹ {{ entry.amount|floatformat:2 }}
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+
+                            <td colspan="6"
+                                class="text-center text-muted">
+
+                                No milk entries found for
+                                this bill period.
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- Summary -->
+
+            <div class="row mt-4">
+
+
+                <!-- Cow -->
+
+                <div class="col-md-4 mb-3">
+
+                    <div class="card border-success h-100">
+
+                        <div class="card-body">
+
+                            <h5>
+                                🐄 Cow
+                            </h5>
+
+                            <p>
+
+                                <strong>Total Qty :</strong>
+
+                                {{ cow_qty|floatformat:2 }}
+
+                            </p>
+
+                            <p>
+
+                                <strong>Total Amount :</strong>
+
+                                ₹ {{ cow_amount|floatformat:2 }}
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Buffalo -->
+
+                <div class="col-md-4 mb-3">
+
+                    <div class="card border-warning h-100">
+
+                        <div class="card-body">
+
+                            <h5>
+                                🐃 Buffalo
+                            </h5>
+
+                            <p>
+
+                                <strong>Total Qty :</strong>
+
+                                {{ buffalo_qty|floatformat:2 }}
+
+                            </p>
+
+                            <p>
+
+                                <strong>Total Amount :</strong>
+
+                                ₹ {{ buffalo_amount|floatformat:2 }}
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Grand Total -->
+
+                <div class="col-md-4 mb-3">
+
+                    <div class="card border-primary shadow-sm h-100">
+
+                        <div class="card-body">
+
+                            <h5>
+                                Grand Total
+                            </h5>
+
+                            <p>
+
+                                <strong>Total Qty :</strong>
+
+                                {{ grand_qty|floatformat:2 }}
+
+                            </p>
+
+                            <h4 class="fw-bold">
+
+                                ₹ {{ grand_amount|floatformat:2 }}
+
+                            </h4>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Buttons -->
+
+            <div class="text-center mt-5">
+
+                <button
+                    type="button"
+                    class="btn btn-primary me-2"
+                    onclick="window.print()">
+
+                    <i class="bi bi-printer"></i>
+
+                    Print Bill
+
+                </button>
+
+
+                <a
+                    href="{% url 'download_bill_pdf' %}?bill_id={{ bill.id }}"
+                    class="btn btn-danger">
+
+                    <i class="bi bi-file-earmark-pdf"></i>
+
+                    Download PDF
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

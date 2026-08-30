@@ -1,8 +1,20 @@
+from io import BytesIO
+
+from django.http import HttpResponse
+
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import mm
+
 from django.shortcuts import render,redirect,get_object_or_404
 # from .models import *
+from datetime import datetime
 from .models import Customer
 from .models import MilkEntry
+from .models import Bill
 from django.contrib import messages
+from django.db.models import Sum, F, DecimalField, ExpressionWrapper
+
 # from django.shortcuts import get_object_or_404
 
 
@@ -231,3 +243,917 @@ def delete_milk_entry(request, id):
     messages.success(request, "Milk Entry Deleted Successfully!")
 
     return redirect("milk_entry_list")
+
+
+
+
+def monthly_bill(request):
+
+    customers = Customer.objects.all()
+
+    if request.method == "POST":
+
+        customer_id = request.POST.get("customer")
+
+        from_date = request.POST.get("from_date")
+
+        to_date = request.POST.get("to_date")
+
+        return redirect(
+            "bill_report",
+            customer_id=customer_id,
+            from_date=from_date,
+            to_date=to_date
+        )
+
+    return render(
+        request,
+        "monthly_bill.html",
+        {
+            "customers": customers
+        }
+    )
+
+
+def bill_report(request):
+
+    # --------------------------------
+    # Get Saved Bill
+    # --------------------------------
+
+    bill_id = request.GET.get("bill_id")
+
+    bill = get_object_or_404(
+        Bill,
+        id=bill_id
+    )
+
+    # --------------------------------
+    # Customer + Bill Details
+    # --------------------------------
+
+    customer = bill.customer
+
+    from_date = bill.from_date
+    to_date = bill.to_date
+
+    bill_number = bill.bill_number
+    bill_date = bill.bill_date
+
+    # --------------------------------
+    # Milk Entries
+    # --------------------------------
+
+    milk_entries = MilkEntry.objects.filter(
+        customer=customer,
+        date__range=[from_date, to_date]
+    ).annotate(
+        amount=ExpressionWrapper(
+            F("milk_quantity") * F("rate"),
+            output_field=DecimalField(
+                max_digits=10,
+                decimal_places=2
+            )
+        )
+    ).order_by("date")
+
+    # --------------------------------
+    # Cow
+    # --------------------------------
+
+    cow_entries = milk_entries.filter(
+        milk_type="Cow"
+    )
+
+    cow_qty = cow_entries.aggregate(
+        total=Sum("milk_quantity")
+    )["total"] or 0
+
+    cow_amount = cow_entries.aggregate(
+        total=Sum("amount")
+    )["total"] or 0
+
+    # --------------------------------
+    # Buffalo
+    # --------------------------------
+
+    buffalo_entries = milk_entries.filter(
+        milk_type="Buffalo"
+    )
+
+    buffalo_qty = buffalo_entries.aggregate(
+        total=Sum("milk_quantity")
+    )["total"] or 0
+
+    buffalo_amount = buffalo_entries.aggregate(
+        total=Sum("amount")
+    )["total"] or 0
+
+    # --------------------------------
+    # Grand Total
+    # --------------------------------
+
+    grand_qty = cow_qty + buffalo_qty
+
+    grand_amount = cow_amount + buffalo_amount
+
+    # --------------------------------
+    # Render Report
+    # --------------------------------
+
+    return render(
+    request,
+    "bill_report.html",
+    {
+        "customer": customer,
+
+        "bill": bill,
+
+        "bill_number": bill_number,
+        "bill_date": bill_date,
+
+        "milk_entries": milk_entries,
+
+        "from_date": from_date,
+        "to_date": to_date,
+
+        "cow_qty": cow_qty,
+        "buffalo_qty": buffalo_qty,
+
+        "cow_amount": cow_amount,
+        "buffalo_amount": buffalo_amount,
+
+        "grand_qty": grand_qty,
+        "grand_amount": grand_amount,
+    },
+)
+
+def generate_bill(request):
+
+    if request.method != "POST":
+        return redirect("monthly_bill")
+
+    customer_id = request.POST.get("customer")
+    from_date = request.POST.get("from_date")
+    to_date = request.POST.get("to_date")
+
+    # Customer
+    customer = get_object_or_404(
+        Customer,
+        id=customer_id
+    )
+
+    # --------------------------------
+    # Duplicate Bill Check
+    # --------------------------------
+
+    existing_bill = Bill.objects.filter(
+        customer=customer,
+        from_date=from_date,
+        to_date=to_date
+    ).first()
+
+    if existing_bill:
+
+        messages.info(
+            request,
+            f"Bill already exists: {existing_bill.bill_number}"
+        )
+
+        return redirect(
+            f"/bill_report/?customer={customer.id}"
+            f"&from_date={from_date}"
+            f"&to_date={to_date}"
+        )
+
+    # --------------------------------
+    # Milk Entries
+    # --------------------------------
+
+    milk_entries = MilkEntry.objects.filter(
+        customer=customer,
+        date__range=[from_date, to_date]
+    ).annotate(
+        amount=ExpressionWrapper(
+            F("milk_quantity") * F("rate"),
+            output_field=DecimalField(
+                max_digits=10,
+                decimal_places=2
+            )
+        )
+    )
+
+    # --------------------------------
+    # Cow
+    # --------------------------------
+
+    cow_entries = milk_entries.filter(
+        milk_type="Cow"
+    )
+
+    cow_qty = cow_entries.aggregate(
+        total=Sum("milk_quantity")
+    )["total"] or 0
+
+    cow_amount = cow_entries.aggregate(
+        total=Sum("amount")
+    )["total"] or 0
+
+    # --------------------------------
+    # Buffalo
+    # --------------------------------
+
+    buffalo_entries = milk_entries.filter(
+        milk_type="Buffalo"
+    )
+
+    buffalo_qty = buffalo_entries.aggregate(
+        total=Sum("milk_quantity")
+    )["total"] or 0
+
+    buffalo_amount = buffalo_entries.aggregate(
+        total=Sum("amount")
+    )["total"] or 0
+
+    # --------------------------------
+    # Grand Total
+    # --------------------------------
+
+    grand_qty = cow_qty + buffalo_qty
+    grand_amount = cow_amount + buffalo_amount
+
+    # --------------------------------
+    # Bill Date
+    # --------------------------------
+
+    bill_date = datetime.now().date()
+
+    # --------------------------------
+    # Sequential Bill Number
+    # --------------------------------
+
+    month_code = bill_date.strftime("%Y%m")
+
+    last_bill = Bill.objects.filter(
+        bill_number__startswith=f"BILL-{month_code}-"
+    ).order_by("-id").first()
+
+    if last_bill:
+
+        last_number = int(
+            last_bill.bill_number.split("-")[-1]
+        )
+
+        next_number = last_number + 1
+
+    else:
+
+        next_number = 1
+
+    bill_number = (
+        f"BILL-{month_code}-{next_number:04d}"
+    )
+
+    # --------------------------------
+    # Save Bill
+    # --------------------------------
+
+    bill = Bill.objects.create(
+        customer=customer,
+        bill_number=bill_number,
+        bill_date=bill_date,
+        from_date=from_date,
+        to_date=to_date,
+        total_quantity=grand_qty,
+        total_amount=grand_amount
+    )
+
+    messages.success(
+        request,
+        f"Bill Generated Successfully: {bill_number}"
+    )
+
+    # --------------------------------
+    # Bill Report
+    # --------------------------------
+
+    return redirect(
+    f"/bill_report/?bill_id={bill.id}"
+)
+
+
+def download_bill_pdf(request):
+
+    bill_id = request.GET.get("bill_id")
+
+    bill = get_object_or_404(
+        Bill,
+        id=bill_id
+    )
+
+    customer = bill.customer
+
+    from_date = bill.from_date
+    to_date = bill.to_date
+
+    # --------------------------------
+    # Milk Entries
+    # --------------------------------
+
+    milk_entries = MilkEntry.objects.filter(
+        customer=customer,
+        date__range=[from_date, to_date]
+    ).annotate(
+        amount=ExpressionWrapper(
+            F("milk_quantity") * F("rate"),
+            output_field=DecimalField(
+                max_digits=10,
+                decimal_places=2
+            )
+        )
+    ).order_by("date")
+
+    # --------------------------------
+    # Cow
+    # --------------------------------
+
+    cow_entries = milk_entries.filter(
+        milk_type="Cow"
+    )
+
+    cow_qty = cow_entries.aggregate(
+        total=Sum("milk_quantity")
+    )["total"] or 0
+
+    cow_amount = cow_entries.aggregate(
+        total=Sum("amount")
+    )["total"] or 0
+
+    # --------------------------------
+    # Buffalo
+    # --------------------------------
+
+    buffalo_entries = milk_entries.filter(
+        milk_type="Buffalo"
+    )
+
+    buffalo_qty = buffalo_entries.aggregate(
+        total=Sum("milk_quantity")
+    )["total"] or 0
+
+    buffalo_amount = buffalo_entries.aggregate(
+        total=Sum("amount")
+    )["total"] or 0
+
+    # --------------------------------
+    # Grand Total
+    # --------------------------------
+
+    grand_qty = cow_qty + buffalo_qty
+    grand_amount = cow_amount + buffalo_amount
+
+    # --------------------------------
+    # PDF Setup
+    # --------------------------------
+
+    buffer = BytesIO()
+
+    pdf = canvas.Canvas(
+        buffer,
+        pagesize=A4
+    )
+
+    width, height = A4
+
+    left = 18 * mm
+    right = width - 18 * mm
+
+    # --------------------------------
+    # Header
+    # --------------------------------
+
+    pdf.setFont(
+        "Helvetica-Bold",
+        22
+    )
+
+    pdf.drawCentredString(
+        width / 2,
+        height - 25 * mm,
+        "DairyFlow"
+    )
+
+    pdf.setFont(
+        "Helvetica-Bold",
+        13
+    )
+
+    pdf.drawCentredString(
+        width / 2,
+        height - 33 * mm,
+        "MONTHLY MILK BILL"
+    )
+
+    pdf.line(
+        left,
+        height - 38 * mm,
+        right,
+        height - 38 * mm
+    )
+
+    # --------------------------------
+    # Customer + Bill Details
+    # --------------------------------
+
+    box_top = height - 45 * mm
+    box_bottom = height - 75 * mm
+
+    pdf.rect(
+        left,
+        box_bottom,
+        right - left,
+        box_top - box_bottom
+    )
+
+    middle = width / 2
+
+    pdf.line(
+        middle,
+        box_bottom,
+        middle,
+        box_top
+    )
+
+    # Customer title
+
+    pdf.setFont(
+        "Helvetica-Bold",
+        10
+    )
+
+    pdf.drawString(
+        left + 5 * mm,
+        box_top - 7 * mm,
+        "CUSTOMER DETAILS"
+    )
+
+    # Customer details
+
+    pdf.setFont(
+        "Helvetica",
+        9
+    )
+
+    pdf.drawString(
+        left + 5 * mm,
+        box_top - 14 * mm,
+        f"Name    : {customer.customer_name}"
+    )
+
+    pdf.drawString(
+        left + 5 * mm,
+        box_top - 20 * mm,
+        f"Mobile  : {customer.mobile_no}"
+    )
+
+    pdf.drawString(
+        left + 5 * mm,
+        box_top - 26 * mm,
+        f"Address : {customer.address}"
+    )
+
+    # Bill title
+
+    pdf.setFont(
+        "Helvetica-Bold",
+        10
+    )
+
+    pdf.drawString(
+        middle + 5 * mm,
+        box_top - 7 * mm,
+        "BILL DETAILS"
+    )
+
+    # Bill details
+
+    pdf.setFont(
+        "Helvetica",
+        9
+    )
+
+    pdf.drawString(
+        middle + 5 * mm,
+        box_top - 14 * mm,
+        f"Bill No.  : {bill.bill_number}"
+    )
+
+    pdf.drawString(
+        middle + 5 * mm,
+        box_top - 20 * mm,
+        f"Bill Date : {bill.bill_date.strftime('%d %b %Y')}"
+    )
+
+    pdf.drawString(
+        middle + 5 * mm,
+        box_top - 26 * mm,
+        f"Period    : {from_date} - {to_date}"
+    )
+
+    # --------------------------------
+    # Milk Table
+    # --------------------------------
+
+    table_top = box_bottom - 10 * mm
+
+    col_x = [
+        left,
+        left + 32 * mm,
+        left + 58 * mm,
+        left + 94 * mm,
+        left + 120 * mm,
+        left + 147 * mm,
+        right
+    ]
+
+    row_height = 8 * mm
+
+    # --------------------------------
+    # Table Header
+    # --------------------------------
+
+    pdf.setFont(
+        "Helvetica-Bold",
+        8
+    )
+
+    # Header border
+
+    pdf.rect(
+        left,
+        table_top - row_height,
+        right - left,
+        row_height
+    )
+
+    # Header vertical lines
+
+    for x in col_x[1:-1]:
+
+        pdf.line(
+            x,
+            table_top - row_height,
+            x,
+            table_top
+        )
+
+    headers = [
+        "Date",
+        "Shift",
+        "Milk Type",
+        "Quantity",
+        "Rate",
+        "Amount"
+    ]
+
+    for i, header in enumerate(headers):
+
+        center_x = (
+            col_x[i] + col_x[i + 1]
+        ) / 2
+
+        pdf.drawCentredString(
+            center_x,
+            table_top - 5.5 * mm,
+            header
+        )
+
+    # --------------------------------
+    # Table Rows
+    # --------------------------------
+
+    y = table_top - row_height
+
+    pdf.setFont(
+        "Helvetica",
+        8
+    )
+
+    for entry in milk_entries:
+
+        y -= row_height
+
+        # Row border
+
+        pdf.rect(
+            left,
+            y,
+            right - left,
+            row_height
+        )
+
+        # Vertical lines
+
+        for x in col_x[1:-1]:
+
+            pdf.line(
+                x,
+                y,
+                x,
+                y + row_height
+            )
+
+        values = [
+            entry.date.strftime("%d %b %Y"),
+            str(entry.shift),
+            str(entry.milk_type),
+            f"{entry.milk_quantity:.2f}",
+            f"{entry.rate:.2f}",
+            f"Rs. {entry.amount:.2f}"
+        ]
+
+        for i, value in enumerate(values):
+
+            center_x = (
+                col_x[i] + col_x[i + 1]
+            ) / 2
+
+            pdf.drawCentredString(
+                center_x,
+                y + 2.7 * mm,
+                value
+            )
+
+    # --------------------------------
+    # No Milk Entries
+    # --------------------------------
+
+    if not milk_entries.exists():
+
+        y -= row_height
+
+        pdf.rect(
+            left,
+            y,
+            right - left,
+            row_height
+        )
+
+        pdf.setFont(
+            "Helvetica-Oblique",
+            9
+        )
+
+        pdf.drawCentredString(
+            width / 2,
+            y + 2.7 * mm,
+            "No milk entries found"
+        )
+
+    # --------------------------------
+    # Summary
+    # --------------------------------
+
+    summary_top = y - 12 * mm
+
+    # Cow
+
+    pdf.setFont(
+        "Helvetica-Bold",
+        10
+    )
+
+    pdf.drawString(
+        left,
+        summary_top,
+        "Cow Total"
+    )
+
+    pdf.setFont(
+        "Helvetica",
+        9
+    )
+
+    pdf.drawString(
+        left + 35 * mm,
+        summary_top,
+        f"{cow_qty:.2f} L"
+    )
+
+    pdf.drawRightString(
+        right,
+        summary_top,
+        f"Rs. {cow_amount:.2f}"
+    )
+
+    # Buffalo
+
+    pdf.setFont(
+        "Helvetica-Bold",
+        10
+    )
+
+    pdf.drawString(
+        left,
+        summary_top - 7 * mm,
+        "Buffalo Total"
+    )
+
+    pdf.setFont(
+        "Helvetica",
+        9
+    )
+
+    pdf.drawString(
+        left + 35 * mm,
+        summary_top - 7 * mm,
+        f"{buffalo_qty:.2f} L"
+    )
+
+    pdf.drawRightString(
+        right,
+        summary_top - 7 * mm,
+        f"Rs. {buffalo_amount:.2f}"
+    )
+
+    # --------------------------------
+    # Grand Total
+    # --------------------------------
+
+    grand_top = summary_top - 15 * mm
+    grand_bottom = grand_top - 16 * mm
+
+    pdf.rect(
+        left,
+        grand_bottom,
+        right - left,
+        16 * mm
+    )
+
+    pdf.setFont(
+        "Helvetica-Bold",
+        12
+    )
+
+    pdf.drawString(
+        left + 5 * mm,
+        grand_bottom + 10 * mm,
+        "GRAND TOTAL"
+    )
+
+    pdf.drawString(
+        left + 60 * mm,
+        grand_bottom + 10 * mm,
+        f"{grand_qty:.2f} L"
+    )
+
+    pdf.drawRightString(
+        right - 5 * mm,
+        grand_bottom + 10 * mm,
+        f"Rs. {grand_amount:.2f}"
+    )
+
+    # --------------------------------
+    # Footer
+    # --------------------------------
+
+    pdf.setFont(
+        "Helvetica-Bold",
+        11
+    )
+
+    pdf.drawCentredString(
+        width / 2,
+        25 * mm,
+        "Thank You!"
+    )
+
+    pdf.setFont(
+        "Helvetica",
+        9
+    )
+
+    pdf.drawCentredString(
+        width / 2,
+        19 * mm,
+        "DairyFlow Milk Center"
+    )
+
+    # --------------------------------
+    # Save PDF
+    # --------------------------------
+
+    pdf.save()
+
+    buffer.seek(0)
+
+    response = HttpResponse(
+        buffer,
+        content_type="application/pdf"
+    )
+
+    response["Content-Disposition"] = (
+        f'attachment; filename="{bill.bill_number}.pdf"'
+    )
+
+    return response
+
+
+def bill_history(request):
+
+    bills = Bill.objects.select_related(
+        "customer"
+    ).order_by("-bill_date", "-id")
+
+    # --------------------------------
+    # Filters
+    # --------------------------------
+
+    customer_id = request.GET.get("customer")
+    from_date = request.GET.get("from_date")
+    to_date = request.GET.get("to_date")
+
+    if customer_id:
+        bills = bills.filter(
+            customer_id=customer_id
+        )
+
+    if from_date:
+        bills = bills.filter(
+            bill_date__gte=from_date
+        )
+
+    if to_date:
+        bills = bills.filter(
+            bill_date__lte=to_date
+        )
+
+    # --------------------------------
+    # Pagination
+    # --------------------------------
+
+    from django.core.paginator import Paginator
+
+    paginator = Paginator(
+        bills,
+        10
+    )
+
+    page_number = request.GET.get("page")
+
+    page_obj = paginator.get_page(
+        page_number
+    )
+
+    # --------------------------------
+    # Customers
+    # --------------------------------
+
+    customers = Customer.objects.all().order_by(
+        "customer_name"
+    )
+
+    return render(
+        request,
+        "bill_history.html",
+        {
+            "page_obj": page_obj,
+            "bills": page_obj.object_list,
+
+            "customers": customers,
+
+            "selected_customer": customer_id,
+            "from_date": from_date,
+            "to_date": to_date,
+        }
+    )
+
+
+def delete_bill(request, id):
+
+    if request.method != "POST":
+        return redirect("bill_history")
+
+    bill = get_object_or_404(
+        Bill,
+        id=id
+    )
+
+    bill_number = bill.bill_number
+
+    bill.delete()
+
+    messages.success(
+        request,
+        f"Bill {bill_number} deleted successfully."
+    )
+
+    return redirect("bill_history")
+
+
+def home(request):
+    return render(request, "base.html")
+
+
+def admin_base(request):
+    return render(request, "admin_base.html")

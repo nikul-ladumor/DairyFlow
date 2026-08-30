@@ -26,4 +26,20 @@ urlpatterns=[
     path("edit_milk_entry/<int:id>", views.edit_milk_entry, name="edit_milk_entry"),
 
     path("delete_milk_entry/<int:id>", views.delete_milk_entry, name="delete_milk_entry"),
+
+    path("monthly_bill/", views.monthly_bill, name="monthly_bill"),
+
+    path("bill_report/", views.bill_report, name="bill_report"),
+
+    path("download_bill_pdf/", views.download_bill_pdf, name="download_bill_pdf"),
+
+    path("bill_history/", views.bill_history, name="bill_history"),
+
+    path("delete_bill/<int:id>/", views.delete_bill, name="delete_bill"),
+
+    path("generate_bill/", views.generate_bill, name="generate_bill"),
+
+    # path("dashboard/", views.admin_dashboard, name="dashboard"),
+
+    path("admin_base/", views.admin_base, name="admin_base"),
 ]

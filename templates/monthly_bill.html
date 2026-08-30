@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-success text-white">
+
+            <h3>
+
+                <i class="bi bi-receipt"></i>
+
+                Monthly Bill
+
+            </h3>
+
+        </div>
+
+        <div class="card-body">
+
+            <form method="post" action="{% url 'generate_bill' %}">
+
+    {% csrf_token %}
+
+    <!-- Customer -->
+
+    <div class="mb-3">
+
+        <label class="form-label">
+            Customer
+        </label>
+
+        <select
+            class="form-select"
+            name="customer"
+            required>
+
+            <option value="">
+                Select Customer
+            </option>
+
+            {% for customer in customers %}
+
+            <option value="{{ customer.id }}">
+                {{ customer.customer_name }}
+            </option>
+
+            {% endfor %}
+
+        </select>
+
+    </div>
+
+
+    <!-- From Date -->
+
+    <div class="mb-3">
+
+        <label class="form-label">
+            From Date
+        </label>
+
+        <input
+            type="date"
+            class="form-control"
+            name="from_date"
+            required>
+
+    </div>
+
+
+    <!-- To Date -->
+
+    <div class="mb-3">
+
+        <label class="form-label">
+            To Date
+        </label>
+
+        <input
+            type="date"
+            class="form-control"
+            name="to_date"
+            required>
+
+    </div>
+
+
+    <button
+        type="submit"
+        class="btn btn-success">
+
+        <i class="bi bi-search"></i>
+
+        Generate Bill
+
+    </button>
+
+</form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
