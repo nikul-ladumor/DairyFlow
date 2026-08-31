@@ -1,0 +1,630 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- =========================
+         DASHBOARD HEADER
+    ========================= -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold mb-1">
+
+                <i class="bi bi-speedometer2 text-success"></i>
+
+                Admin Dashboard
+
+            </h2>
+
+            <p class="text-muted mb-0">
+                Welcome to DairyFlow Admin Panel
+            </p>
+
+        </div>
+
+
+        <div>
+
+            <span class="badge bg-success fs-6">
+
+                <i class="bi bi-calendar3 me-1"></i>
+
+                Today
+
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         STATISTICS CARDS
+    ========================= -->
+
+    <div class="row g-4 mb-4">
+
+
+        <!-- Total Customers -->
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+
+                            <p class="text-muted mb-1">
+                                Total Customers
+                            </p>
+
+                            <h2 class="fw-bold mb-0">
+                                {{ total_customers }}
+                            </h2>
+
+                        </div>
+
+
+                        <div class="bg-success bg-opacity-10 rounded-circle p-3">
+
+                            <i class="bi bi-people-fill text-success fs-3"></i>
+
+                        </div>
+
+                    </div>
+
+
+                    <a href="{% url 'customer_list' %}"
+                       class="text-success text-decoration-none small">
+
+                        View Customers
+                        <i class="bi bi-arrow-right"></i>
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Total Milk Entries -->
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+
+                            <p class="text-muted mb-1">
+                                Total Milk Entries
+                            </p>
+
+                            <h2 class="fw-bold mb-0">
+                                {{ total_milk_entries }}
+                            </h2>
+
+                        </div>
+
+
+                        <div class="bg-primary bg-opacity-10 rounded-circle p-3">
+
+                            <i class="bi bi-droplet-fill text-primary fs-3"></i>
+
+                        </div>
+
+                    </div>
+
+
+                    <a href="{% url 'milk_entry_list' %}"
+                       class="text-primary text-decoration-none small">
+
+                        View Milk Entries
+                        <i class="bi bi-arrow-right"></i>
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Total Bills -->
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+
+                            <p class="text-muted mb-1">
+                                Total Bills
+                            </p>
+
+                            <h2 class="fw-bold mb-0">
+                                {{ total_bills }}
+                            </h2>
+
+                        </div>
+
+
+                        <div class="bg-warning bg-opacity-10 rounded-circle p-3">
+
+                            <i class="bi bi-receipt text-warning fs-3"></i>
+
+                        </div>
+
+                    </div>
+
+
+                    <a href="{% url 'bill_history' %}"
+                       class="text-warning text-decoration-none small">
+
+                        View Bill History
+                        <i class="bi bi-arrow-right"></i>
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Total Bill Amount -->
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+
+                            <p class="text-muted mb-1">
+                                Total Bill Amount
+                            </p>
+
+                            <h2 class="fw-bold mb-0">
+
+                                ₹ {{ total_bill_amount|floatformat:2 }}
+
+                            </h2>
+
+                        </div>
+
+
+                        <div class="bg-danger bg-opacity-10 rounded-circle p-3">
+
+                            <i class="bi bi-currency-rupee text-danger fs-3"></i>
+
+                        </div>
+
+                    </div>
+
+
+                    <a href="{% url 'bill_history' %}"
+                       class="text-danger text-decoration-none small">
+
+                        View Bills
+                        <i class="bi bi-arrow-right"></i>
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         MILK SUMMARY
+    ========================= -->
+
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body py-4">
+
+            <div class="row align-items-center">
+
+
+                <!-- TOTAL MILK -->
+
+                <div class="col-md-4 text-center">
+
+                    <div class="milk-summary-icon total-milk">
+
+                        <i class="bi bi-droplet-fill"></i>
+
+                    </div>
+
+                    <h6 class="mt-2 mb-2 text-muted">
+                        Total Milk Quantity
+                    </h6>
+
+                    <h2 class="fw-bold text-primary mb-0">
+
+                        {{ total_milk_quantity|floatformat:2 }} L
+
+                    </h2>
+
+                </div>
+
+
+                <!-- COW MILK -->
+
+                <div class="col-md-4 text-center border-start border-end">
+
+                    <div class="milk-summary-icon cow-milk">
+
+                        🐄
+
+                    </div>
+
+                    <h6 class="mt-2 mb-2 text-muted">
+                        Cow Milk
+                    </h6>
+
+                    <h2 class="fw-bold text-success mb-0">
+
+                        {{ cow_milk|floatformat:2 }} L
+
+                    </h2>
+
+                </div>
+
+
+                <!-- BUFFALO MILK -->
+
+                <div class="col-md-4 text-center">
+
+                    <div class="milk-summary-icon buffalo-milk">
+
+                        🐃
+
+                    </div>
+
+                    <h6 class="mt-2 mb-2 text-muted">
+                        Buffalo Milk
+                    </h6>
+
+                    <h2 class="fw-bold text-warning mb-0">
+
+                        {{ buffalo_milk|floatformat:2 }} L
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         RECENT DATA
+    ========================= -->
+
+    <div class="row g-4">
+
+
+        <!-- RECENT MILK ENTRIES -->
+
+        <div class="col-lg-7">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-header bg-white border-0 py-3">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <h5 class="mb-0 fw-bold">
+
+                            <i class="bi bi-droplet-half text-success me-2"></i>
+
+                            Recent Milk Entries
+
+                        </h5>
+
+
+                        <a href="{% url 'milk_entry_list' %}"
+                           class="btn btn-sm btn-success">
+
+                            View All
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card-body p-0">
+
+                    <div class="table-responsive">
+
+                        <table class="table table-hover align-middle mb-0">
+
+                            <thead class="table-light">
+
+                                <tr>
+
+                                    <th>#</th>
+                                    <th>Date</th>
+                                    <th>Customer</th>
+                                    <th>Milk</th>
+                                    <th>Qty</th>
+
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody>
+
+                                {% for entry in recent_milk_entries %}
+
+                                <tr>
+
+                                    <td>
+                                        {{ forloop.counter }}
+                                    </td>
+
+
+                                    <td>
+                                        {{ entry.date|date:"d M Y" }}
+                                    </td>
+
+
+                                    <td>
+                                        {{ entry.customer.customer_name }}
+                                    </td>
+
+
+                                    <td>
+
+                                        {% if entry.milk_type == "Cow" %}
+
+                                            <span class="badge bg-success">
+                                                🐄 Cow
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="badge bg-warning text-dark">
+                                                🐃 Buffalo
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {{ entry.milk_quantity|floatformat:2 }} L
+
+                                    </td>
+
+                                </tr>
+
+
+                                {% empty %}
+
+                                <tr>
+
+                                    <td colspan="5"
+                                        class="text-center text-muted py-4">
+
+                                        No milk entries found.
+
+                                    </td>
+
+                                </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- RECENT BILLS -->
+
+        <div class="col-lg-5">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-header bg-white border-0 py-3">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <h5 class="mb-0 fw-bold">
+
+                            <i class="bi bi-receipt text-success me-2"></i>
+
+                            Recent Bills
+
+                        </h5>
+
+
+                        <a href="{% url 'bill_history' %}"
+                           class="btn btn-sm btn-success">
+
+                            View All
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card-body p-0">
+
+                    <div class="table-responsive">
+
+                        <table class="table table-hover align-middle mb-0">
+
+                            <thead class="table-light">
+
+                                <tr>
+
+                                    <th>Bill No.</th>
+                                    <th>Customer</th>
+                                    <th>Amount</th>
+
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody>
+
+                                {% for bill in recent_bills %}
+
+                                <tr>
+
+                                    <td>
+
+                                        <strong>
+                                            {{ bill.bill_number }}
+                                        </strong>
+
+                                    </td>
+
+
+                                    <td>
+                                        {{ bill.customer.customer_name }}
+                                    </td>
+
+
+                                    <td>
+
+                                        ₹ {{ bill.total_amount|floatformat:2 }}
+
+                                    </td>
+
+                                </tr>
+
+
+                                {% empty %}
+
+                                <tr>
+
+                                    <td colspan="3"
+                                        class="text-center text-muted py-4">
+
+                                        No bills found.
+
+                                    </td>
+
+                                </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     MILK ICON CSS
+========================= -->
+
+<style>
+
+    .milk-summary-icon {
+
+        width: 55px;
+        height: 55px;
+
+        margin: 0 auto;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 50%;
+
+        font-size: 30px;
+
+    }
+
+
+    .milk-summary-icon.total-milk {
+
+        background: #e7f5ff;
+
+        color: #0d6efd;
+
+    }
+
+
+    .milk-summary-icon.cow-milk {
+
+        background: #e8f7ee;
+
+        font-size: 32px;
+
+    }
+
+
+    .milk-summary-icon.buffalo-milk {
+
+        background: #fff3cd;
+
+        font-size: 32px;
+
+    }
+
+</style>
+
+{% endblock %}

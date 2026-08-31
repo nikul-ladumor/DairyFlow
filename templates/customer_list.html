@@ -1,72 +1,297 @@
-{% extends "base.html" %}
+{% extends "admin_base.html" %}
 
 {% block content %}
 
-<div class="container mt-5">
+<div class="container-fluid mt-3 mb-5">
 
-    <h2 class="text-success mb-4">
-        <i class="bi bi-people-fill me-2"></i>
-        Customer List
-    </h2>
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
 
-    <table class="table table-bordered table-striped">
+        <h3 class="text-success mb-0">
 
-        <thead class="table-success">
+            <i class="bi bi-people-fill me-2"></i>
+            Customer List
 
-            <tr>
+        </h3>
 
-                <th>ID</th>
+        <!-- Add Customer Button -->
+        <a href="{% url 'add_customer' %}"
+           class="btn btn-success">
 
-                <th>Customer ID</th>
+            <i class="bi bi-person-plus-fill me-1"></i>
+            Add Customer
 
-                <th>Name</th>
+        </a>
 
-                <th>Mobile</th>
+    </div>
 
-                <th>Address</th>
 
-                <th>Action</th>
+    <!-- Customer Table -->
 
-            </tr>
-    
-        </thead>
+    <div class="card shadow-sm border-0">
 
-        <tbody>
+        <div class="card-body p-0">
 
-        {% for customer in customers %}
+            <div class="table-responsive">
 
-        <tr>
+                <table class="table table-bordered table-hover align-middle mb-0">
 
-            <td>{{ customer.id }}</td>
+                    <thead class="table-success">
 
-            <td>{{ customer.customer_id }}</td>
+                        <tr>
 
-            <td>{{ customer.customer_name }}</td>
+                            <th>ID</th>
+                            <th>Customer ID</th>
+                            <th>Name</th>
+                            <th>Mobile</th>
+                            <th>Address</th>
+                            <th>Action</th>
 
-            <td>{{ customer.mobile_no }}</td>
+                        </tr>
 
-            <td>{{ customer.address }}</td>
+                    </thead>
 
-            <td>
-                <!-- update button-->
-                <a href="{% url 'edit_customer' customer.id %}" class="btn btn-warning btn-sm me-2">
-                    <i class="bi bi-pencil-square"></i>
-                </a>
-                
-                <!-- Delete button-->
-                <a href="{% url 'delete_customer' customer.id %}" class="btn btn-danger btn-sm">
-                    <i class="bi bi-trash"></i>
-                </a>
-            </td>
 
-        </tr>
+                    <tbody>
 
-        {% endfor %}
+                        {% for customer in customers %}
 
-        </tbody>
+                        <tr>
 
-        
-    </table>
+                            <td>
+                                {{ customer.id }}
+                            </td>
 
-</div
+                            <td>
+                                {{ customer.customer_id }}
+                            </td>
+
+                            <td>
+                                {{ customer.customer_name }}
+                            </td>
+
+                            <td>
+                                {{ customer.mobile_no }}
+                            </td>
+
+                            <td>
+                                {{ customer.address }}
+                            </td>
+
+                            <td>
+
+                                <!-- Edit -->
+
+                                <a href="{% url 'edit_customer' customer.id %}"
+                                   class="btn btn-sm btn-warning me-1"
+                                   title="Edit Customer">
+
+                                    <i class="bi bi-pencil-square"></i>
+
+                                </a>
+
+
+                                <!-- Delete -->
+
+                                <a href="{% url 'delete_customer' customer.id %}"
+                                   class="btn btn-sm btn-danger"
+                                   title="Delete Customer"
+                                   onclick="return confirm('Are you sure you want to delete this customer?');">
+
+                                    <i class="bi bi-trash-fill"></i>
+
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+
+                        {% empty %}
+
+                        <tr>
+
+                            <td colspan="6"
+                                class="text-center text-muted py-4">
+
+                                <i class="bi bi-person-x fs-3"></i>
+
+                                <br>
+
+                                No customers found.
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+        <!-- Pagination -->
+
+        {% if paginator.count > 0 %}
+
+        <div class="card-footer bg-white border-0">
+
+            <div class="row align-items-center">
+
+
+                <!-- Showing -->
+
+                <div class="col-md-6 text-muted">
+
+                    Showing
+
+                    <strong>
+                        {{ page_obj.start_index }}
+                    </strong>
+
+                    to
+
+                    <strong>
+                        {{ page_obj.end_index }}
+                    </strong>
+
+                    of
+
+                    <strong>
+                        {{ paginator.count }}
+                    </strong>
+
+                    customer{{ paginator.count|pluralize }}
+
+                </div>
+
+
+                <!-- Page Navigation -->
+
+                <div class="col-md-6">
+
+                    <nav>
+
+                        <ul class="pagination justify-content-end mb-0">
+
+
+                            <!-- Previous -->
+
+                            {% if page_obj.has_previous %}
+
+                            <li class="page-item">
+
+                                <a class="page-link"
+                                   href="?page={{ page_obj.previous_page_number }}">
+
+                                    <i class="bi bi-chevron-left"></i>
+                                    Previous
+
+                                </a>
+
+                            </li>
+
+                            {% else %}
+
+                            <li class="page-item disabled">
+
+                                <span class="page-link">
+
+                                    <i class="bi bi-chevron-left"></i>
+                                    Previous
+
+                                </span>
+
+                            </li>
+
+                            {% endif %}
+
+
+                            <!-- Page Numbers -->
+
+                            {% for num in page_obj.paginator.page_range %}
+
+                                {% if page_obj.number == num %}
+
+                                <li class="page-item active">
+
+                                    <span class="page-link bg-success border-success">
+
+                                        {{ num }}
+
+                                    </span>
+
+                                </li>
+
+                                {% else %}
+
+                                <li class="page-item">
+
+                                    <a class="page-link"
+                                       href="?page={{ num }}">
+
+                                        {{ num }}
+
+                                    </a>
+
+                                </li>
+
+                                {% endif %}
+
+                            {% endfor %}
+
+
+                            <!-- Next -->
+
+                            {% if page_obj.has_next %}
+
+                            <li class="page-item">
+
+                                <a class="page-link"
+                                   href="?page={{ page_obj.next_page_number }}">
+
+                                    Next
+                                    <i class="bi bi-chevron-right"></i>
+
+                                </a>
+
+                            </li>
+
+                            {% else %}
+
+                            <li class="page-item disabled">
+
+                                <span class="page-link">
+
+                                    Next
+                                    <i class="bi bi-chevron-right"></i>
+
+                                </span>
+
+                            </li>
+
+                            {% endif %}
+
+
+                        </ul>
+
+                    </nav>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
 {% endblock %}

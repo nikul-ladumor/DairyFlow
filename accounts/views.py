@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
-
+from django.core.paginator import Paginator
 from django.shortcuts import render,redirect,get_object_or_404
 # from .models import *
 from datetime import datetime
@@ -19,7 +19,11 @@ from django.db.models import Sum, F, DecimalField, ExpressionWrapper
 
 
 def home(request):
-    return render(request,"home.html")
+    return render(request, "base.html")
+
+
+def admin_base(request):
+    return render(request, "admin_base.html")
 
 
 def admin_login(request):
@@ -28,6 +32,68 @@ def admin_login(request):
 
 def customer_login(request):
     return render(request,"customer_login.html")
+
+
+def dashboard(request):
+
+    # Total Customers
+    total_customers = Customer.objects.count()
+
+    # Total Milk Entries
+    total_milk_entries = MilkEntry.objects.count()
+
+    # Total Bills
+    total_bills = Bill.objects.count()
+
+    # Total Milk Quantity
+    total_milk_quantity = MilkEntry.objects.aggregate(
+        total=Sum("milk_quantity")
+    )["total"] or 0
+
+    # Total Bill Amount
+    total_bill_amount = Bill.objects.aggregate(
+        total=Sum("total_amount")
+    )["total"] or 0
+
+    # Cow Milk
+    cow_milk = MilkEntry.objects.filter(
+        milk_type="Cow"
+    ).aggregate(
+        total=Sum("milk_quantity")
+    )["total"] or 0
+
+    # Buffalo Milk
+    buffalo_milk = MilkEntry.objects.filter(
+        milk_type="Buffalo"
+    ).aggregate(
+        total=Sum("milk_quantity")
+    )["total"] or 0
+
+    # Recent Milk Entries
+    recent_milk_entries = MilkEntry.objects.select_related(
+        "customer"
+    ).order_by("-date")[:5]
+
+    # Recent Bills
+    recent_bills = Bill.objects.select_related(
+        "customer"
+    ).order_by("-bill_date")[:5]
+
+    return render(
+        request,
+        "dashboard.html",
+        {
+            "total_customers": total_customers,
+            "total_milk_entries": total_milk_entries,
+            "total_bills": total_bills,
+            "total_milk_quantity": total_milk_quantity,
+            "total_bill_amount": total_bill_amount,
+            "cow_milk": cow_milk,
+            "buffalo_milk": buffalo_milk,
+            "recent_milk_entries": recent_milk_entries,
+            "recent_bills": recent_bills,
+        }
+    )
 
 def add_customer(request):
 
@@ -73,13 +139,27 @@ def add_customer(request):
 
 def customer_list(request):
 
-    customers = Customer.objects.all()
+    customers = Customer.objects.all().order_by("id")
 
-    return render(request,"customer_list.html",
-                    {
-                        "customers":customers
-                    }
-                )
+    # --------------------------------
+    # Pagination
+    # --------------------------------
+
+    paginator = Paginator(customers, 10)
+
+    page_number = request.GET.get("page")
+
+    page_obj = paginator.get_page(page_number)
+
+    return render(
+        request,
+        "customer_list.html",
+        {
+            "customers": page_obj,
+            "page_obj": page_obj,
+            "paginator": paginator,
+        }
+    )
 
 
 def edit_customer(request, id):
@@ -1149,11 +1229,3 @@ def delete_bill(request, id):
     )
 
     return redirect("bill_history")
-
-
-def home(request):
-    return render(request, "base.html")
-
-
-def admin_base(request):
-    return render(request, "admin_base.html")

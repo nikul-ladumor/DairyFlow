@@ -39,7 +39,7 @@ urlpatterns=[
 
     path("generate_bill/", views.generate_bill, name="generate_bill"),
 
-    # path("dashboard/", views.admin_dashboard, name="dashboard"),
+    path("dashboard/", views.dashboard, name="dashboard"),
 
     path("admin_base/", views.admin_base, name="admin_base"),
 ]
