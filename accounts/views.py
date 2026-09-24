@@ -490,6 +490,82 @@ def customer_dashboard(request):
 
 
 
+def customer_milk_history(request):
+
+    customer_id = request.session.get("customer_id")
+
+    if not customer_id:
+        messages.error(
+            request,
+            "Please login first."
+        )
+        return redirect("customer_login")
+
+    customer = get_object_or_404(
+        Customer,
+        id=customer_id
+    )
+
+    milk_entries = MilkEntry.objects.filter(
+        customer=customer
+    ).annotate(
+        amount=ExpressionWrapper(
+            F("milk_quantity") * F("rate"),
+            output_field=DecimalField(
+                max_digits=10,
+                decimal_places=2
+            )
+        )
+    ).order_by("-date", "-id")
+
+    paginator = Paginator(milk_entries, 10)
+
+    page_number = request.GET.get("page")
+
+    page_obj = paginator.get_page(page_number)
+
+    return render(
+        request,
+        "customer_milk_history.html",
+        {
+            "customer": customer,
+            "milk_entries": page_obj,
+            "page_obj": page_obj,
+        }
+    )
+
+
+
+def customer_bills(request):
+
+    customer_id = request.session.get("customer_id")
+
+    if not customer_id:
+        messages.error(
+            request,
+            "Please login first."
+        )
+        return redirect("customer_login")
+
+    customer = get_object_or_404(
+        Customer,
+        id=customer_id
+    )
+
+    bills = Bill.objects.filter(
+        customer=customer
+    ).order_by("-bill_date", "-id")
+
+    return render(
+        request,
+        "customer_bills.html",
+        {
+            "customer": customer,
+            "bills": bills,
+        }
+    )
+
+
 def customer_profile(request):
 
     customer_id = request.session.get("customer_id")
@@ -1065,6 +1141,7 @@ def generate_bill(request):
     # --------------------------------
     # Milk Entries
     # --------------------------------
+    
 
     milk_entries = MilkEntry.objects.filter(
         customer=customer,
@@ -1077,8 +1154,7 @@ def generate_bill(request):
                 decimal_places=2
             )
         )
-    )
-
+    ).order_by("-date", "-id")
     # --------------------------------
     # Cow
     # --------------------------------
@@ -1177,7 +1253,6 @@ def generate_bill(request):
     f"/bill_report/?bill_id={bill.id}"
 )
 
-
 def download_bill_pdf(request):
 
     bill_id = request.GET.get("bill_id")
@@ -1207,7 +1282,7 @@ def download_bill_pdf(request):
                 decimal_places=2
             )
         )
-    ).order_by("date")
+    ).order_by("date", "id")
 
     # --------------------------------
     # Cow
@@ -1397,7 +1472,7 @@ def download_bill_pdf(request):
     )
 
     # --------------------------------
-    # Milk Table
+    # Milk Table Settings
     # --------------------------------
 
     table_top = box_bottom - 10 * mm
@@ -1414,34 +1489,7 @@ def download_bill_pdf(request):
 
     row_height = 8 * mm
 
-    # --------------------------------
-    # Table Header
-    # --------------------------------
-
-    pdf.setFont(
-        "Helvetica-Bold",
-        8
-    )
-
-    # Header border
-
-    pdf.rect(
-        left,
-        table_top - row_height,
-        right - left,
-        row_height
-    )
-
-    # Header vertical lines
-
-    for x in col_x[1:-1]:
-
-        pdf.line(
-            x,
-            table_top - row_height,
-            x,
-            table_top
-        )
+    ROWS_PER_PAGE = 20
 
     headers = [
         "Date",
@@ -1452,17 +1500,56 @@ def download_bill_pdf(request):
         "Amount"
     ]
 
-    for i, header in enumerate(headers):
+    # --------------------------------
+    # Function: Draw Table Header
+    # --------------------------------
 
-        center_x = (
-            col_x[i] + col_x[i + 1]
-        ) / 2
+    def draw_table_header(table_top):
 
-        pdf.drawCentredString(
-            center_x,
-            table_top - 5.5 * mm,
-            header
+        pdf.setFont(
+            "Helvetica-Bold",
+            8
         )
+
+        # Header border
+
+        pdf.rect(
+            left,
+            table_top - row_height,
+            right - left,
+            row_height
+        )
+
+        # Header vertical lines
+
+        for x in col_x[1:-1]:
+
+            pdf.line(
+                x,
+                table_top - row_height,
+                x,
+                table_top
+            )
+
+        # Header text
+
+        for i, header in enumerate(headers):
+
+            center_x = (
+                col_x[i] + col_x[i + 1]
+            ) / 2
+
+            pdf.drawCentredString(
+                center_x,
+                table_top - 5.5 * mm,
+                header
+            )
+
+    # --------------------------------
+    # First Page Table Header
+    # --------------------------------
+
+    draw_table_header(table_top)
 
     # --------------------------------
     # Table Rows
@@ -1475,7 +1562,39 @@ def download_bill_pdf(request):
         8
     )
 
+    entry_count = 0
+
     for entry in milk_entries:
+
+        # --------------------------------
+        # New Page after 20 entries
+        # --------------------------------
+
+        if (
+            entry_count > 0
+            and entry_count % ROWS_PER_PAGE == 0
+        ):
+
+            pdf.showPage()
+
+            # New page table position
+
+            table_top = height - 30 * mm
+
+            # Draw table header
+
+            draw_table_header(table_top)
+
+            y = table_top - row_height
+
+            pdf.setFont(
+                "Helvetica",
+                8
+            )
+
+        # --------------------------------
+        # Row
+        # --------------------------------
 
         y -= row_height
 
@@ -1520,6 +1639,8 @@ def download_bill_pdf(request):
                 value
             )
 
+        entry_count += 1
+
     # --------------------------------
     # No Milk Entries
     # --------------------------------
@@ -1547,12 +1668,46 @@ def download_bill_pdf(request):
         )
 
     # --------------------------------
-    # Summary
+    # Summary Page
     # --------------------------------
 
-    summary_top = y - 12 * mm
+    if milk_entries.exists():
 
-    # Cow
+        pdf.showPage()
+
+        summary_top = height - 45 * mm
+
+    else:
+
+        summary_top = y - 12 * mm
+
+    # --------------------------------
+    # Summary Title
+    # --------------------------------
+
+    pdf.setFont(
+        "Helvetica-Bold",
+        14
+    )
+
+    pdf.drawCentredString(
+        width / 2,
+        summary_top,
+        "BILL SUMMARY"
+    )
+
+    pdf.line(
+        left,
+        summary_top - 4 * mm,
+        right,
+        summary_top - 4 * mm
+    )
+
+    summary_top -= 15 * mm
+
+    # --------------------------------
+    # Cow Total
+    # --------------------------------
 
     pdf.setFont(
         "Helvetica-Bold",
@@ -1582,7 +1737,9 @@ def download_bill_pdf(request):
         f"Rs. {cow_amount:.2f}"
     )
 
-    # Buffalo
+    # --------------------------------
+    # Buffalo Total
+    # --------------------------------
 
     pdf.setFont(
         "Helvetica-Bold",
@@ -1617,6 +1774,7 @@ def download_bill_pdf(request):
     # --------------------------------
 
     grand_top = summary_top - 15 * mm
+
     grand_bottom = grand_top - 16 * mm
 
     pdf.rect(
@@ -1693,6 +1851,7 @@ def download_bill_pdf(request):
     )
 
     return response
+
 
 
 def bill_history(request):

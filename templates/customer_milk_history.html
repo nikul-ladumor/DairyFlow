@@ -1,0 +1,194 @@
+{% extends "customer_base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h3 class="fw-bold mb-1">
+                <i class="bi bi-droplet-half text-success me-2"></i>
+                My Milk History
+            </h3>
+
+            <p class="text-muted mb-0">
+                View your complete milk entry history
+            </p>
+        </div>
+
+    </div>
+
+
+    <!-- Milk History Card -->
+    <div class="card shadow-sm border-0">
+
+        <div class="card-body">
+
+            {% if milk_entries %}
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-success">
+
+                        <tr>
+                            <th>#</th>
+                            <th>Date</th>
+                            <th>Shift</th>
+                            <th>Milk Type</th>
+                            <th>Quantity</th>
+                            <th>Rate</th>
+                            <th>Total Amount</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for entry in milk_entries %}
+
+                        <tr>
+
+                            <td>
+                                {{ page_obj.start_index|add:forloop.counter0 }}
+                            </td>
+
+                            <td>
+                                {{ entry.date|date:"d-m-Y" }}
+                            </td>
+
+                            <td>
+
+                                {% if entry.shift == "Morning" %}
+
+                                    <span class="badge bg-primary">
+                                        ☀️ Morning
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge bg-secondary">
+                                        🌙 Evening
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+
+                                {% if entry.milk_type == "Cow" %}
+
+                                    <span class="badge bg-success">
+                                        🐄 Cow
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge bg-warning text-dark">
+                                        🐃 Buffalo
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+                                {{ entry.milk_quantity }} L
+                            </td>
+
+                            <td>
+                                ₹{{ entry.rate }}
+                            </td>
+
+                            <td class="fw-semibold">
+                                ₹{{ entry.amount|floatformat:2 }}
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+
+            <nav class="mt-4">
+
+                <ul class="pagination justify-content-center">
+
+                    {% if page_obj.has_previous %}
+
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page={{ page_obj.previous_page_number }}">
+                                Previous
+                            </a>
+                        </li>
+
+                    {% endif %}
+
+
+                    <li class="page-item active">
+
+                        <span class="page-link">
+                            {{ page_obj.number }}
+                        </span>
+
+                    </li>
+
+
+                    {% if page_obj.has_next %}
+
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page={{ page_obj.next_page_number }}">
+                                Next
+                            </a>
+                        </li>
+
+                    {% endif %}
+
+                </ul>
+
+            </nav>
+
+            {% endif %}
+
+
+            {% else %}
+
+                <div class="text-center py-5">
+
+                    <i class="bi bi-droplet text-muted"
+                       style="font-size: 50px;">
+                    </i>
+
+                    <h5 class="mt-3">
+                        No Milk Entries Found
+                    </h5>
+
+                    <p class="text-muted">
+                        Your milk history will appear here.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

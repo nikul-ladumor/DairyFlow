@@ -53,6 +53,10 @@ urlpatterns=[
 
     path("customer_dashboard/", views.customer_dashboard, name="customer_dashboard"),
 
+    path("customer_milk_history/", views.customer_milk_history, name="customer_milk_history"),
+
+    path("customer_bills/", views.customer_bills, name="customer_bills"),
+
     path("admin_base/", views.admin_base, name="admin_base"),
 
     path("admin_logout/", views.admin_logout, name="admin_logout"),

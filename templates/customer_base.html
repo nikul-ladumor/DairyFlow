@@ -271,27 +271,20 @@
 
         <!-- My Milk -->
 
-        <a href="#"
-           class="{% if request.resolver_match.url_name == 'customer_milk_history' %}active{% endif %}">
-
+        <a href="{% url 'customer_milk_history' %}"
+        class="{% if request.resolver_match.url_name == 'customer_milk_history' %}active{% endif %}">
             <i class="bi bi-droplet-half"></i>
-
             My Milk History
-
         </a>
 
 
         <!-- My Bills -->
 
-        <a href="#"
-           class="{% if request.resolver_match.url_name == 'customer_bills' %}active{% endif %}">
-
+        <a href="{% url 'customer_bills' %}"
+        class="{% if request.resolver_match.url_name == 'customer_bills' %}active{% endif %}">
             <i class="bi bi-receipt"></i>
-
             My Bills
-
         </a>
-
 
         <!-- My Profile -->
 
