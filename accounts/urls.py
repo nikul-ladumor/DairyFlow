@@ -11,6 +11,16 @@ urlpatterns=[
 
     path("customer_login/", views.customer_login, name="customer_login"),
 
+    path("customer_profile/", views.customer_profile, name="customer_profile"),
+
+    path("change_password/", views.change_password, name="change_password"),
+
+    path("forgot_password/", views.forgot_password, name="forgot_password"),
+
+    path("verify_otp/", views.verify_otp, name="verify_otp"),
+
+    path("reset_password/", views.reset_password, name="reset_password"),
+
     path("add_customer/", views.add_customer, name="add_customer"),
 
     path("customer_list/", views.customer_list, name="customer_list"),
@@ -41,5 +51,11 @@ urlpatterns=[
 
     path("dashboard/", views.dashboard, name="dashboard"),
 
+    path("customer_dashboard/", views.customer_dashboard, name="customer_dashboard"),
+
     path("admin_base/", views.admin_base, name="admin_base"),
+
+    path("admin_logout/", views.admin_logout, name="admin_logout"),
+
+    path("customer_logout/", views.customer_logout, name="customer_logout"),
 ]

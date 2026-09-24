@@ -4,87 +4,185 @@
 
 <div class="container">
 
-<div class="row justify-content-center mt-5">
+    <div class="row justify-content-center mt-5">
 
-<div class="col-md-5">
+        <div class="col-md-5">
 
-<div class="card shadow p-4">
+            <div class="card shadow p-4">
 
-<h2 class="text-center text-success">
-    <i class="bi bi-person-fill"></i> Customer Login
-</h2>
+                <!-- Title -->
 
-<hr>
+                <h2 class="text-center text-success">
 
-<form>
+                    <i class="bi bi-person-fill me-2"></i>
 
-<div class="mb-3">
+                    Customer Login
 
-<label>
+                </h2>
 
-Customer ID
+                <hr>
 
-</label>
 
-<input type="text"
+                <!-- Messages -->
 
-class="form-control"
+                {% if messages %}
 
-placeholder="Enter Customer ID">
+                    {% for message in messages %}
 
-</div>
+                        <div class="alert alert-danger alert-dismissible fade show">
 
-<div class="mb-3">
-    <label>Password</label>
+                            {{ message }}
 
-    <div class="input-group">
+                            <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="alert">
+                            </button>
 
-        <input type="password"
-            class="form-control"
-            id="password"
-            placeholder="Enter Password">
+                        </div>
 
-        <span class="input-group-text" onclick="togglePassword()" style="cursor:pointer;">
-            <i class="bi bi-eye" id="eyeIcon"></i>
-        </span>
+                    {% endfor %}
+
+                {% endif %}
+
+
+                <!-- Login Form -->
+
+                <form method="POST"
+                      action="{% url 'customer_login' %}" autocomplete="off">
+
+                    {% csrf_token %}
+
+
+                    <!-- Customer ID -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label fw-semibold">
+
+                            Customer ID
+
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            name="customer_id"
+                            placeholder="Enter Customer ID"
+                            autocomplete="off"
+                            required>
+
+                    </div>
+
+
+                    <!-- Password -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label fw-semibold">
+
+                            Password
+
+                        </label>
+
+
+                        <div class="input-group">
+
+                            <input
+                                type="password"
+                                class="form-control"
+                                id="password"
+                                name="password"
+                                placeholder="Enter Password"
+                                autocomplete="new-password"
+                                required>
+
+
+                            <span
+                                class="input-group-text"
+                                onclick="togglePassword()"
+                                style="cursor: pointer;">
+
+                                <i
+                                    class="bi bi-eye"
+                                    id="eyeIcon">
+                                </i>
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Forgot Password -->
+
+                    <div class="text-end mb-3">
+
+                        <a href="{% url 'forgot_password' %}"
+                            class="text-success text-decoration-none">
+                            Forgot Password?
+                        </a>
+
+                    </div>
+
+
+                    <!-- Login Button -->
+
+                    <button
+                        type="submit"
+                        class="btn btn-success w-100">
+
+                        <i class="bi bi-box-arrow-in-right me-1"></i>
+
+                        Login
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
 
     </div>
-</div>
-
-<button class="btn btn-success w-100">
-
-Login
-
-</button>
-
-</form>
-
-</div>
-
-</div>
-
-</div>
 
 </div>
 
 
+<!-- =========================
+     SHOW / HIDE PASSWORD
+========================= -->
 
 <script>
+
 function togglePassword() {
 
-    let password = document.getElementById("password");
-    let eye = document.getElementById("eyeIcon");
+    const password =
+        document.getElementById("password");
+
+    const eyeIcon =
+        document.getElementById("eyeIcon");
+
 
     if (password.type === "password") {
+
         password.type = "text";
-        eye.className = "bi bi-eye-slash";
+
+        eyeIcon.className =
+            "bi bi-eye-slash";
+
     } else {
+
         password.type = "password";
-        eye.className = "bi bi-eye";
+
+        eyeIcon.className =
+            "bi bi-eye";
+
     }
 
 }
-</script>
 
+</script>
 
 {% endblock %}

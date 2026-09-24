@@ -1,13 +1,21 @@
 from io import BytesIO
-
 from django.http import HttpResponse
-
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from django.core.paginator import Paginator
 from django.shortcuts import render,redirect,get_object_or_404
 # from .models import *
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import check_password
+from django.contrib.auth.hashers import check_password, make_password
+from .models import Customer, MilkEntry, Bill, PasswordResetOTP
+from datetime import timedelta
+import random
+from django.utils import timezone
+from django.contrib.auth.hashers import make_password
 from datetime import datetime
 from .models import Customer
 from .models import MilkEntry
@@ -26,14 +34,63 @@ def admin_base(request):
     return render(request, "admin_base.html")
 
 
+def admin_logout(request):
+
+    logout(request)
+
+    messages.success(
+        request,
+        "Logged out successfully."
+    )
+
+    return redirect("admin_login")
+
+
+def customer_logout(request):
+
+    request.session.flush()
+
+    messages.success(
+        request,
+        "Logged out successfully."
+    )
+
+    return redirect("customer_login")
+
+
+
 def admin_login(request):
-    return render(request,"admin_login.html")
 
+    if request.method == "POST":
 
-def customer_login(request):
-    return render(request,"customer_login.html")
+        username = request.POST.get("username")
+        password = request.POST.get("password")
 
+        user = authenticate(
+            request,
+            username=username,
+            password=password
+        )
 
+        if user is not None and user.is_superuser:
+
+            login(request, user)
+
+            return redirect("dashboard")
+
+        messages.error(
+            request,
+            "Invalid username or password."
+        )
+
+        return redirect("admin_login")
+
+    return render(
+        request,
+        "admin_login.html"
+    )
+
+@login_required(login_url="admin_login")
 def dashboard(request):
 
     # Total Customers
@@ -95,46 +152,545 @@ def dashboard(request):
         }
     )
 
+
+def customer_login(request):
+
+    if request.method == "POST":
+
+        customer_id = request.POST.get("customer_id")
+        password = request.POST.get("password")
+
+        try:
+
+            customer = Customer.objects.get(
+                customer_id=customer_id
+            )
+
+        except Customer.DoesNotExist:
+
+            messages.error(
+                request,
+                "Invalid Customer ID or Password."
+            )
+
+            return redirect("customer_login")
+
+
+        if check_password(password, customer.password):
+
+            request.session["customer_id"] = customer.id
+
+            return redirect("customer_dashboard")
+
+
+        messages.error(
+            request,
+            "Invalid Customer ID or Password."
+        )
+
+        return redirect("customer_login")
+
+
+    return render(
+        request,
+        "customer_login.html"
+    )
+
+
+def forgot_password(request):
+
+    if request.method == "POST":
+
+        customer_id = request.POST.get("customer_id")
+        mobile_no = request.POST.get("mobile_no")
+
+        try:
+
+            customer = Customer.objects.get(
+                customer_id=customer_id,
+                mobile_no=mobile_no
+            )
+
+        except Customer.DoesNotExist:
+
+            messages.error(
+                request,
+                "Invalid Customer ID or Mobile Number."
+            )
+
+            return redirect("forgot_password")
+
+        # Generate 6-digit OTP
+        otp = str(random.randint(100000, 999999))
+
+        # Save hashed OTP
+        PasswordResetOTP.objects.create(
+            customer=customer,
+            otp_hash=make_password(otp)
+        )
+
+        # Store customer in session for next step
+        request.session["reset_customer_id"] = customer.id
+
+        # Development testing
+        print("================================")
+        print("DairyFlow Password Reset OTP:", otp)
+        print("================================")
+
+        messages.success(
+            request,
+            "OTP generated successfully. Check the server console."
+        )
+
+        return redirect("verify_otp")
+
+    return render(
+        request,
+        "forgot_password.html"
+    )
+
+
+def verify_otp(request):
+
+    customer_id = request.session.get("reset_customer_id")
+
+    if not customer_id:
+
+        messages.error(
+            request,
+            "Please start the password reset process again."
+        )
+
+        return redirect("forgot_password")
+
+    customer = get_object_or_404(
+        Customer,
+        id=customer_id
+    )
+
+    if request.method == "POST":
+
+        entered_otp = request.POST.get("otp")
+
+        otp_record = PasswordResetOTP.objects.filter(
+            customer=customer,
+            is_verified=False
+        ).order_by("-created_at").first()
+
+        # OTP record not found
+        if not otp_record:
+
+            messages.error(
+                request,
+                "OTP not found. Please request a new OTP."
+            )
+
+            return redirect("forgot_password")
+
+        # OTP expired after 5 minutes
+        if timezone.now() > (
+            otp_record.created_at + timedelta(minutes=5)
+        ):
+
+            messages.error(
+                request,
+                "OTP has expired. Please request a new OTP."
+            )
+
+            return redirect("forgot_password")
+
+        # Maximum 3 attempts
+        if otp_record.attempts >= 3:
+
+            messages.error(
+                request,
+                "Too many incorrect attempts. Please request a new OTP."
+            )
+
+            return redirect("forgot_password")
+
+        # Check OTP
+        if check_password(
+            entered_otp,
+            otp_record.otp_hash
+        ):
+
+            otp_record.is_verified = True
+            otp_record.save()
+
+            request.session["otp_verified"] = True
+
+            messages.success(
+                request,
+                "OTP verified successfully."
+            )
+
+            return redirect("reset_password")
+
+        # Wrong OTP
+        otp_record.attempts += 1
+        otp_record.save()
+
+        messages.error(
+            request,
+            "Invalid OTP."
+
+        )
+
+        return redirect("verify_otp")
+
+    return render(
+        request,
+        "verify_otp.html"
+    )
+
+
+def reset_password(request):
+
+    customer_id = request.session.get("reset_customer_id")
+    otp_verified = request.session.get("otp_verified")
+
+    # Check OTP verification
+    if not customer_id or not otp_verified:
+
+        messages.error(
+            request,
+            "Please verify OTP first."
+        )
+
+        return redirect("forgot_password")
+
+    customer = get_object_or_404(
+        Customer,
+        id=customer_id
+    )
+
+    if request.method == "POST":
+
+        new_password = request.POST.get("new_password")
+        confirm_password = request.POST.get("confirm_password")
+
+        # Password length
+        if len(new_password) < 8:
+
+            messages.error(
+                request,
+                "Password must be at least 8 characters."
+            )
+
+            return redirect("reset_password")
+
+        # Password confirmation
+        if new_password != confirm_password:
+
+            messages.error(
+                request,
+                "Passwords do not match."
+            )
+
+            return redirect("reset_password")
+
+        # Save hashed password
+        customer.password = make_password(
+            new_password
+        )
+
+        customer.save()
+
+        # Clear password reset session
+        request.session.pop(
+            "reset_customer_id",
+            None
+        )
+
+        request.session.pop(
+            "otp_verified",
+            None
+        )
+
+        messages.success(
+            request,
+            "Password reset successfully. Please login."
+        )
+
+        return redirect("customer_login")
+
+    return render(
+        request,
+        "reset_password.html"
+    )
+
+
+def customer_dashboard(request):
+
+    customer_id = request.session.get("customer_id")
+
+    if not customer_id:
+        messages.error(
+            request,
+            "Please login first."
+        )
+
+        return redirect("customer_login")
+
+
+    customer = get_object_or_404(
+        Customer,
+        id=customer_id
+    )
+
+
+    milk_entries = MilkEntry.objects.filter(
+        customer=customer
+    ).order_by("-date", "-id")
+
+
+    total_milk_quantity = milk_entries.aggregate(
+        total=Sum("milk_quantity")
+    )["total"] or 0
+
+
+    cow_milk = milk_entries.filter(
+        milk_type="Cow"
+    ).aggregate(
+        total=Sum("milk_quantity")
+    )["total"] or 0
+
+
+    buffalo_milk = milk_entries.filter(
+        milk_type="Buffalo"
+    ).aggregate(
+        total=Sum("milk_quantity")
+    )["total"] or 0
+
+
+    recent_milk_entries = milk_entries[:5]
+
+
+    bills = Bill.objects.filter(
+        customer=customer
+    ).order_by("-bill_date", "-id")
+
+
+    recent_bills = bills[:5]
+
+
+    return render(
+        request,
+        "customer_dashboard.html",
+        {
+            "customer": customer,
+            "total_milk_quantity": total_milk_quantity,
+            "cow_milk": cow_milk,
+            "buffalo_milk": buffalo_milk,
+            "recent_milk_entries": recent_milk_entries,
+            "recent_bills": recent_bills,
+        }
+    )
+
+
+
+def customer_profile(request):
+
+    customer_id = request.session.get("customer_id")
+
+    if not customer_id:
+
+        messages.error(
+            request,
+            "Please login first."
+        )
+
+        return redirect("customer_login")
+
+    customer = get_object_or_404(
+        Customer,
+        id=customer_id
+    )
+
+    return render(
+        request,
+        "customer_profile.html",
+        {
+            "customer": customer,
+        }
+    )
+
+def change_password(request):
+
+    customer_id = request.session.get("customer_id")
+
+    if not customer_id:
+
+        messages.error(
+            request,
+            "Please login first."
+        )
+
+        return redirect("customer_login")
+
+    customer = get_object_or_404(
+        Customer,
+        id=customer_id
+    )
+
+    if request.method == "POST":
+
+        current_password = request.POST.get("current_password")
+        new_password = request.POST.get("new_password")
+        confirm_password = request.POST.get("confirm_password")
+
+        # Check current password
+        if not check_password(
+            current_password,
+            customer.password
+        ):
+
+            messages.error(
+                request,
+                "Current password is incorrect."
+            )
+
+            return redirect("change_password")
+
+        # Check new password
+        if len(new_password) < 8:
+
+            messages.error(
+                request,
+                "New password must be at least 8 characters."
+            )
+
+            return redirect("change_password")
+
+        # Confirm password
+        if new_password != confirm_password:
+
+            messages.error(
+                request,
+                "New passwords do not match."
+            )
+
+            return redirect("change_password")
+
+        # Save hashed password
+        customer.password = make_password(
+            new_password
+        )
+
+        customer.save()
+
+        messages.success(
+            request,
+            "Password changed successfully."
+        )
+
+        return redirect("customer_profile")
+
+    return render(
+        request,
+        "change_password.html"
+    )
+
+    
+
 def add_customer(request):
 
     if request.method == "POST":
-        
+
         customer_id = request.POST.get("customer_id")
         customer_name = request.POST.get("customer_name")
         mobile_no = request.POST.get("mobile_no")
         address = request.POST.get("address")
 
         # Required validation
-        if not customer_name or not mobile_no or not address:
-            messages.error(request, "Please fill all fields")
+        if not customer_id or not customer_name or not mobile_no or not address:
+
+            messages.error(
+                request,
+                "Please fill all fields"
+            )
 
             return redirect("add_customer")
 
-        # mobile validation
-        if len(mobile_no)!=10 or not mobile_no.isdigit():
-            messages.error(request, "Mobile number must be exactly 10 digits.")
+
+        # Mobile validation
+        if len(mobile_no) != 10 or not mobile_no.isdigit():
+
+            messages.error(
+                request,
+                "Mobile number must be exactly 10 digits."
+            )
 
             return redirect("add_customer")
 
-        # Duplicate Mobile Number Validation
-        if Customer.objects.filter(mobile_no=mobile_no).exists():
-            messages.error(request, "Mobile number already exists.")
+
+        # Duplicate Customer ID
+        if Customer.objects.filter(
+            customer_id=customer_id
+        ).exists():
+
+            messages.error(
+                request,
+                "Customer ID already exists."
+            )
+
             return redirect("add_customer")
-        
+
+
+        # Duplicate Mobile Number
+        if Customer.objects.filter(
+            mobile_no=mobile_no
+        ).exists():
+
+            messages.error(
+                request,
+                "Mobile number already exists."
+            )
+
+            return redirect("add_customer")
+
+
+        # --------------------------------
+        # Default Password
+        # --------------------------------
+
+        default_password = f"DairyFlow{customer_id}"
+
+
+        # --------------------------------
+        # Create Customer
+        # --------------------------------
+
         Customer.objects.create(
 
             customer_id=customer_id,
+
             customer_name=customer_name,
+
             mobile_no=mobile_no,
-            address=address
+
+            address=address,
+
+            password=make_password(default_password)
 
         )
 
-        messages.success(request, "Customer Added Successfully!")
-        
+
+        messages.success(
+            request,
+            f"Customer Added Successfully! "
+            f"Default Password: {default_password}"
+        )
+
+
         return redirect("add_customer")
 
-    return render(request,"add_customer.html")
+
+    return render(
+        request,
+        "add_customer.html"
+    )
 
 
 def customer_list(request):

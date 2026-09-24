@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="row justify-content-center mt-5">
+
+        <div class="col-md-5">
+
+            <div class="card shadow p-4">
+
+                <h2 class="text-center text-success">
+
+                    <i class="bi bi-shield-check me-2"></i>
+
+                    Verify OTP
+
+                </h2>
+
+                <hr>
+
+                <p class="text-muted text-center">
+
+                    Enter the 6-digit OTP sent to your
+                    registered mobile number.
+
+                </p>
+
+                <form method="POST">
+
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+
+                        <label class="form-label fw-semibold">
+
+                            Enter OTP
+
+                        </label>
+
+                        <input
+                            type="text"
+                            name="otp"
+                            class="form-control text-center"
+                            placeholder="Enter 6-digit OTP"
+                            maxlength="6"
+                            pattern="[0-9]{6}"
+                            inputmode="numeric"
+                            required>
+
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="btn btn-success w-100">
+
+                        <i class="bi bi-check-circle me-1"></i>
+
+                        Verify OTP
+
+                    </button>
+
+                </form>
+
+                <div class="text-center mt-3">
+
+                    <a
+                        href="{% url 'forgot_password' %}"
+                        class="text-success text-decoration-none">
+
+                        <i class="bi bi-arrow-left me-1"></i>
+
+                        Back
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

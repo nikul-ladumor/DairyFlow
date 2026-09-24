@@ -1,24 +1,28 @@
 from django.db import models
 
+
 class Customer(models.Model):
     customer_id = models.CharField(max_length=20)
     customer_name = models.CharField(max_length=100)
     mobile_no = models.CharField(max_length=10)
     address = models.CharField(max_length=100)
 
+    password = models.CharField(max_length=128, blank=True)
+
     def __str__(self):
         return self.customer_name
 
 
 SHIFT_CHOICES = [
-        ("Morning", "Morning"),
-        ("Evening", "Evening"),
-    ]
+    ("Morning", "Morning"),
+    ("Evening", "Evening"),
+]
 
 MILK_TYPEE_CHOICES = [
     ("Cow", "Cow"),
     ("Buffalo", "Buffalo"),
 ]
+
 
 class MilkEntry(models.Model):
     customer = models.ForeignKey(Customer,on_delete=models.CASCADE)
@@ -76,3 +80,30 @@ class Bill(models.Model):
 
         def __str__(self):
             return self.bill_number
+
+
+class PasswordResetOTP(models.Model):
+
+    customer = models.ForeignKey(
+        Customer,
+        on_delete=models.CASCADE
+    )
+
+    otp_hash = models.CharField(
+        max_length=128
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    is_verified = models.BooleanField(
+        default=False
+    )
+
+    attempts = models.PositiveIntegerField(
+        default=0
+    )
+
+    def __str__(self):
+        return f"OTP - {self.customer.customer_id}"

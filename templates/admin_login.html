@@ -16,44 +16,62 @@
 
 <hr>
 
-<form>
+<form method="POST">
+
+{% csrf_token %}
 
 <div class="mb-3">
 
-<label>
-
-Username
-
+<label class="form-label">
+    Username
 </label>
 
-<input type="text"
-
-class="form-control"
-
-placeholder="Enter Username">
+<input
+    type="text"
+    class="form-control"
+    name="username"
+    placeholder="Enter Username"
+    required>
 
 </div>
 
 <div class="mb-3">
-    <label>Password</label>
 
-    <div class="input-group">
+<label class="form-label">
+    Password
+</label>
 
-        <input type="password"
-            class="form-control"
-            id="password"
-            placeholder="Enter Password">
+<div class="input-group">
 
-        <span class="input-group-text" onclick="togglePassword()" style="cursor:pointer;">
-            <i class="bi bi-eye" id="eyeIcon"></i>
-        </span>
+<input
+    type="password"
+    class="form-control"
+    id="password"
+    name="password"
+    placeholder="Enter Password"
+    required>
 
-    </div>
+<span
+    class="input-group-text"
+    onclick="togglePassword()"
+    style="cursor:pointer;">
+
+    <i
+        class="bi bi-eye"
+        id="eyeIcon">
+    </i>
+
+</span>
+
 </div>
 
-<button class="btn btn-success w-100">
+</div>
 
-Login
+<button
+    type="submit"
+    class="btn btn-success w-100">
+
+    Login
 
 </button>
 
@@ -68,20 +86,32 @@ Login
 </div>
 
 <script>
+
 function togglePassword() {
 
-    let password = document.getElementById("password");
-    let eye = document.getElementById("eyeIcon");
+    let password =
+        document.getElementById("password");
+
+    let eye =
+        document.getElementById("eyeIcon");
 
     if (password.type === "password") {
+
         password.type = "text";
-        eye.className = "bi bi-eye-slash";
+
+        eye.className =
+            "bi bi-eye-slash";
+
     } else {
+
         password.type = "password";
-        eye.className = "bi bi-eye";
+
+        eye.className =
+            "bi bi-eye";
     }
 
 }
+
 </script>
 
 {% endblock %}
