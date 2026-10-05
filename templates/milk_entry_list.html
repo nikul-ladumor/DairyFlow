@@ -51,9 +51,7 @@
                             <th>Milk Quantity</th>
                             <th>Milk Type</th>
                             <th>Rate</th>
-                            <th class="text-center">
-                                Action
-                            </th>
+                            <th class="text-center action-column">Action</th>
 
                         </tr>
 
@@ -156,30 +154,33 @@
 
                             <!-- Action -->
 
-                            <td class="text-center">
+                            <td class="text-center action-column">
+
+                                <div class="action-buttons">
+
+                                    <!-- Edit -->
+
+                                    <a href="{% url 'edit_milk_entry' milk_entry.id %}"
+                                    class="btn btn-warning btn-sm"
+                                    title="Edit Milk Entry">
+
+                                        <i class="bi bi-pencil-square"></i>
+
+                                    </a>
 
 
-                                <!-- Edit -->
+                                    <!-- Delete -->
 
-                                <a href="{% url 'edit_milk_entry' milk_entry.id %}"
-                                   class="btn btn-warning btn-sm me-1"
-                                   title="Edit Milk Entry">
+                                    <a href="{% url 'delete_milk_entry' milk_entry.id %}"
+                                    class="btn btn-danger btn-sm"
+                                    title="Delete Milk Entry"
+                                    onclick="return confirm('Are you sure you want to delete this milk entry?');">
 
-                                    <i class="bi bi-pencil-square"></i>
+                                        <i class="bi bi-trash-fill"></i>
 
-                                </a>
+                                    </a>
 
-
-                                <!-- Delete -->
-
-                                <a href="{% url 'delete_milk_entry' milk_entry.id %}"
-                                   class="btn btn-danger btn-sm"
-                                   title="Delete Milk Entry"
-                                   onclick="return confirm('Are you sure you want to delete this milk entry?');">
-
-                                    <i class="bi bi-trash-fill"></i>
-
-                                </a>
+                                </div>
 
                             </td>
 

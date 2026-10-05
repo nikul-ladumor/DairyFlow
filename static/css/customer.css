@@ -1,0 +1,782 @@
+/* ==================================================
+   BODY
+================================================== */
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+}
+
+body {
+    background: #f8f9fa;
+}
+
+
+/* ==================================================
+   CUSTOMER LAYOUT
+================================================== */
+
+.customer-layout {
+    display: flex;
+
+    align-items: stretch;
+
+    position: relative;
+
+    width: 100%;
+
+    min-height: 100vh;
+}
+
+
+/* ==================================================
+   CUSTOMER SIDEBAR
+================================================== */
+
+.customer-sidebar {
+    width: 260px;
+
+    flex: 0 0 260px;
+
+    min-height: 100vh;
+
+    background: #198754;
+
+    color: white;
+
+    display: flex;
+
+    flex-direction: column;
+
+    position: relative;
+
+    z-index: 1050;
+}
+
+
+/* ==================================================
+   LOGO
+================================================== */
+
+.customer-logo {
+    text-align: center;
+
+    padding: 10px;
+}
+
+.customer-logo img {
+    width: 120px;
+
+    height: auto;
+}
+
+.customer-sidebar hr {
+    margin: 5px 15px 15px;
+
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+
+/* ==================================================
+   CUSTOMER MENU
+================================================== */
+
+.customer-menu {
+    padding: 0 10px;
+}
+
+
+/* ==================================================
+   NORMAL MENU
+================================================== */
+
+.customer-menu > a {
+    display: flex;
+
+    align-items: center;
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+    color: white;
+
+    text-decoration: none;
+
+    padding: 11px 12px;
+
+    margin-bottom: 5px;
+
+    border-radius: 8px;
+
+    font-weight: 500;
+
+    transition: 0.3s;
+}
+
+
+/* Icons */
+
+.customer-menu > a i {
+    width: 24px;
+
+    margin-right: 8px;
+
+    flex-shrink: 0;
+}
+
+
+/* Hover */
+
+.customer-menu > a:hover {
+    background: rgba(0, 0, 0, 0.12);
+
+    color: #ffc107;
+}
+
+.customer-menu > a:hover i {
+    color: #ffc107;
+}
+
+
+/* Active */
+
+.customer-menu > a.active {
+    background: rgba(0, 0, 0, 0.18);
+
+    color: #ffc107;
+}
+
+.customer-menu > a.active i {
+    color: #ffc107;
+}
+
+
+/* ==================================================
+   SECURITY
+================================================== */
+
+.customer-menu-item {
+    width: calc(100% - 10px);
+
+    margin-left: 10px;
+
+    margin-bottom: 5px;
+}
+
+
+/* Security Main */
+
+.customer-menu-item .security-menu {
+    display: flex;
+
+    align-items: center;
+
+    width: 100%;
+
+    min-height: 42px;
+
+    padding: 11px 12px;
+
+    box-sizing: border-box;
+
+    color: white;
+
+    text-decoration: none;
+
+    border-radius: 8px;
+
+    font-weight: 500;
+
+    transition: 0.3s;
+
+    cursor: pointer;
+}
+
+
+/* Security Icon */
+
+.customer-menu-item .security-menu > i:first-child {
+    width: 24px;
+
+    margin-right: 8px;
+
+    color: white;
+}
+
+
+/* Security Hover */
+
+.customer-menu-item .security-menu:hover {
+    background: rgba(0, 0, 0, 0.12);
+
+    color: white;
+}
+
+
+/* Security Active */
+
+.customer-menu-item .security-menu.active {
+    background: rgba(0, 0, 0, 0.18);
+
+    color: #ffc107;
+}
+
+.customer-menu-item .security-menu.active > i:first-child {
+    color: #ffc107;
+}
+
+
+/* ==================================================
+   SECURITY SUBMENU
+================================================== */
+
+.security-submenu {
+    display: none;
+
+    padding-left: 18px;
+
+    margin-top: 2px;
+}
+
+.security-submenu.show {
+    display: block;
+}
+
+
+.security-submenu a {
+    display: flex;
+
+    align-items: center;
+
+    width: 100%;
+
+    min-height: 38px;
+
+    padding: 8px 12px 8px 20px;
+
+    box-sizing: border-box;
+
+    color: white !important;
+
+    text-decoration: none !important;
+
+    border-radius: 6px;
+
+    font-size: 14px;
+
+    font-weight: 500;
+
+    transition: 0.3s;
+}
+
+
+.security-submenu a i {
+    width: 22px;
+
+    margin-right: 8px;
+
+    color: white;
+}
+
+
+.security-submenu a:hover {
+    background: rgba(0, 0, 0, 0.12);
+
+    color: white !important;
+}
+
+
+.security-submenu a.active {
+    background: rgba(0, 0, 0, 0.18);
+
+    color: #ffc107 !important;
+}
+
+.security-submenu a.active i {
+    color: #ffc107;
+}
+
+
+/* ==================================================
+   SECURITY ARROW
+================================================== */
+
+#securityArrow {
+    width: auto !important;
+
+    margin-right: 0 !important;
+
+    color: white;
+
+    transition: transform 0.2s ease;
+}
+
+#securityArrow.rotate {
+    transform: rotate(180deg);
+}
+
+
+/* ==================================================
+   LOGOUT
+================================================== */
+
+.customer-logout {
+    margin-top: auto;
+
+    padding: 10px;
+
+    flex-shrink: 0;
+}
+
+
+.customer-logout a {
+    display: flex;
+
+    align-items: center;
+
+    color: white;
+
+    text-decoration: none;
+
+    padding: 11px 12px;
+
+    border-radius: 8px;
+
+    transition: 0.3s;
+}
+
+
+.customer-logout a:hover {
+    background: rgba(0, 0, 0, 0.12);
+
+    color: #ffc107;
+}
+
+
+/* ==================================================
+   MAIN
+================================================== */
+
+.customer-main {
+    flex: 1;
+
+    min-width: 0;
+
+    min-height: 100vh;
+
+    background: #f8f9fa;
+}
+
+
+/* ==================================================
+   HEADER
+================================================== */
+
+.customer-header {
+    height: 65px;
+
+    background: white;
+
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding: 0 25px;
+
+    box-sizing: border-box;
+
+    position: sticky;
+    top: 0;
+
+    z-index: 1000;
+}
+
+
+.customer-header-left {
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+}
+
+
+.customer-header-title {
+    font-size: 20px;
+
+    font-weight: 600;
+}
+
+
+/* ==================================================
+   MOBILE MENU BUTTON
+================================================== */
+
+.customer-mobile-menu-btn {
+    display: none;
+
+    width: 40px;
+
+    height: 40px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background: #198754;
+
+    color: white;
+
+    font-size: 22px;
+
+    align-items: center;
+
+    justify-content: center;
+
+    cursor: pointer;
+}
+
+
+.customer-mobile-menu-btn:hover {
+    background: #157347;
+}
+
+
+/* ==================================================
+   CLOSE BUTTON
+================================================== */
+
+.customer-sidebar-close {
+    display: none;
+}
+
+
+/* ==================================================
+   OVERLAY
+================================================== */
+
+.customer-sidebar-overlay {
+    display: none;
+}
+
+
+/* ==================================================
+   CONTENT
+================================================== */
+
+.customer-content {
+    padding: 25px;
+}
+
+
+/* ==================================================
+   DASHBOARD TABLE
+================================================== */
+
+.customer-dashboard-table {
+    min-width: 650px;
+}
+
+
+.customer-dashboard-table th,
+.customer-dashboard-table td {
+    padding: 12px 15px;
+
+    vertical-align: middle;
+}
+
+
+.customer-dashboard-table thead th {
+    white-space: nowrap;
+}
+
+
+/* ==================================================
+   MOBILE
+================================================== */
+
+@media (max-width: 991.98px) {
+
+    /*
+       Main page remains normal scroll.
+       Sidebar gets no internal scrollbar.
+    */
+
+    .customer-layout {
+        display: block;
+
+        min-height: 100vh;
+
+        position: relative;
+    }
+
+
+    /* ----------------------------------------------
+       MOBILE SIDEBAR
+    ---------------------------------------------- */
+
+    .customer-sidebar {
+        position: absolute;
+
+        top: 0;
+
+        left: 0;
+
+        width: 260px;
+
+        /*
+           Important:
+           sidebar follows complete page height
+        */
+
+        height: 100%;
+
+        min-height: 100vh;
+
+        overflow: visible;
+
+        background: #198754;
+
+        transform: translateX(-100%);
+
+        transition: transform 0.3s ease;
+
+        z-index: 1050;
+    }
+
+
+    .customer-sidebar.show {
+        transform: translateX(0);
+    }
+
+
+    /* ----------------------------------------------
+       CLOSE BUTTON
+    ---------------------------------------------- */
+
+    .customer-sidebar-close {
+        display: flex;
+
+        position: absolute;
+
+        top: 15px;
+
+        right: 15px;
+
+        width: 35px;
+
+        height: 35px;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border: none;
+
+        border-radius: 50%;
+
+        background: rgba(255, 255, 255, 0.15);
+
+        color: white;
+
+        font-size: 16px;
+
+        cursor: pointer;
+
+        z-index: 2;
+    }
+
+
+    .customer-sidebar-close:hover {
+        background: rgba(0, 0, 0, 0.20);
+
+        color: #ffc107;
+    }
+
+
+    /* ----------------------------------------------
+       MAIN
+    ---------------------------------------------- */
+
+    .customer-main {
+        width: 100%;
+
+        margin-left: 0;
+
+        min-height: 100vh;
+    }
+
+
+    /* ----------------------------------------------
+       MOBILE MENU BUTTON
+    ---------------------------------------------- */
+
+    .customer-mobile-menu-btn {
+        display: flex;
+    }
+
+
+    /* ----------------------------------------------
+       HEADER
+    ---------------------------------------------- */
+
+
+    .customer-header {
+        height: 65px;
+        padding: 0 15px;
+
+        position: sticky;
+        top: 0;
+
+        z-index: 1000;
+    }
+
+
+    .customer-header-title {
+        font-size: 18px;
+    }
+
+
+    /* ----------------------------------------------
+       OVERLAY
+    ---------------------------------------------- */
+
+    .customer-sidebar-overlay {
+        display: block;
+
+        position: fixed;
+
+        inset: 0;
+
+        background: rgba(0, 0, 0, 0.45);
+
+        z-index: 1040;
+
+        opacity: 0;
+
+        visibility: hidden;
+
+        transition:
+            opacity 0.3s ease,
+            visibility 0.3s ease;
+    }
+
+
+    .customer-sidebar-overlay.show {
+        opacity: 1;
+
+        visibility: visible;
+    }
+
+
+    /* ----------------------------------------------
+       CONTENT
+    ---------------------------------------------- */
+
+    .customer-content {
+        padding: 20px 15px;
+    }
+
+
+    /* ----------------------------------------------
+       TABLE
+    ---------------------------------------------- */
+
+    .customer-dashboard-table {
+        min-width: 650px;
+
+        font-size: 14px;
+    }
+
+
+    .customer-dashboard-table th,
+    .customer-dashboard-table td {
+        padding: 10px 12px;
+    }
+
+
+    /* ----------------------------------------------
+       LOGOUT
+    ---------------------------------------------- */
+
+    .customer-logout {
+        margin-top: auto;
+
+        flex-shrink: 0;
+    }
+}
+
+
+/* ==================================================
+   SMALL MOBILE
+================================================== */
+
+@media (max-width: 575.98px) {
+
+    .customer-sidebar {
+        width: 250px;
+    }
+
+
+    .customer-logo img {
+        width: 120px;
+
+        height: auto;
+    }
+
+
+    .customer-header {
+        height: 60px;
+        padding: 0 10px;
+
+        position: sticky;
+        top: 0;
+
+        z-index: 1000;
+    }
+
+
+    .customer-header-title {
+        font-size: 16px;
+    }
+
+
+    .customer-content {
+        padding: 15px 10px;
+    }
+
+
+    .customer-dashboard-table {
+        min-width: 650px;
+
+        font-size: 14px;
+    }
+
+
+    .customer-dashboard-table th,
+    .customer-dashboard-table td {
+        padding: 10px 12px;
+    }
+
+
+    .customer-menu-item .security-menu {
+        min-height: 42px;
+    }
+
+
+    .security-submenu {
+        padding-left: 12px;
+    }
+
+
+    .security-submenu a {
+        padding-left: 18px;
+    }
+}

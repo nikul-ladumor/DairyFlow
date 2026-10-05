@@ -172,8 +172,8 @@
 
             <div class="table-responsive">
 
-                <table class="table table-hover
-                              align-middle mb-0">
+                <table class="table table-bordered table-hover
+              align-middle mb-0 customer-dashboard-table">
 
                     <thead class="table-success">
 
@@ -208,24 +208,30 @@
 
 
                             <td>
-
-                                {{ entry.shift }}
-
+                                {% if entry.shift == "Morning" %}
+                                    <span class="badge bg-primary">
+                                        <i class="bi bi-sun-fill me-1"></i>
+                                        Morning
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary">
+                                        <i class="bi bi-moon-fill me-1"></i>
+                                        Evening
+                                    </span>
+                                {% endif %}
                             </td>
 
 
                             <td>
-
                                 {% if entry.milk_type == "Cow" %}
-
-                                    🐄 Cow
-
+                                    <span class="badge bg-success">
+                                        🐄 Cow
+                                    </span>
                                 {% else %}
-
-                                    🐃 Buffalo
-
+                                    <span class="badge bg-warning text-dark">
+                                        🐃 Buffalo
+                                    </span>
                                 {% endif %}
-
                             </td>
 
 
@@ -297,8 +303,8 @@
 
             <div class="table-responsive">
 
-                <table class="table table-hover
-                              align-middle mb-0">
+                <table class="table table-bordered table-hover
+              align-middle mb-0 customer-dashboard-table">
 
                     <thead class="table-success">
 

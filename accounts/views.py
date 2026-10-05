@@ -670,6 +670,7 @@ def change_password(request):
 
     
 
+@login_required(login_url="admin_login")
 def add_customer(request):
 
     if request.method == "POST":
@@ -769,7 +770,9 @@ def add_customer(request):
     )
 
 
+@login_required(login_url="admin_login")
 def customer_list(request):
+
 
     customers = Customer.objects.all().order_by("id")
 
@@ -851,7 +854,9 @@ def delete_customer(request, id):
     return redirect("customer_list")
 
 
+@login_required(login_url="admin_login")
 def add_milk_entry(request):
+
 
     customers = Customer.objects.all()
 
@@ -894,6 +899,7 @@ def add_milk_entry(request):
     )
 
 
+@login_required(login_url="admin_login")
 def milk_entry_list(request):
 
     milk_entries = MilkEntry.objects.all()
@@ -959,6 +965,7 @@ def delete_milk_entry(request, id):
 
 
 
+@login_required(login_url="admin_login")
 def monthly_bill(request):
 
     customers = Customer.objects.all()
@@ -987,6 +994,7 @@ def monthly_bill(request):
     )
 
 
+@login_required(login_url="admin_login")
 def bill_report(request):
 
     # --------------------------------
@@ -1141,7 +1149,7 @@ def generate_bill(request):
     # --------------------------------
     # Milk Entries
     # --------------------------------
-    
+
 
     milk_entries = MilkEntry.objects.filter(
         customer=customer,
@@ -1854,6 +1862,7 @@ def download_bill_pdf(request):
 
 
 
+@login_required(login_url="admin_login")
 def bill_history(request):
 
     bills = Bill.objects.select_related(
